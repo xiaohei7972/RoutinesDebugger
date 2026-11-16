@@ -8,6 +8,11 @@ foreach ($project in @('RoutineHelper', 'RoutineCompiler', 'ReflectionCodeGenera
     dotnet publish (Join-Path $repositoryRoot "$project/$project.csproj") -c Release --self-contained false -o $destination --nologo
     if ($LASTEXITCODE -ne 0) { throw "Publish failed: $project" }
 }
+$unexpectedResources = Get-ChildItem -LiteralPath $destination -Recurse -Filter '*.resources.dll' |
+    Where-Object { [Reflection.AssemblyName]::GetAssemblyName($_.FullName).CultureName -ne 'zh-Hans' }
+if ($unexpectedResources) {
+    throw "Unexpected satellite resource languages: $($unexpectedResources.FullName -join ', ')"
+}
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'README.md') -Destination $destination
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'LICENSE') -Destination $destination
 Compress-Archive -Path (Join-Path $destination '*') -DestinationPath ($destination + '.zip') -Force

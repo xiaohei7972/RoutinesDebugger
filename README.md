@@ -53,7 +53,7 @@ dotnet run --project tests/EditorSmoke -c Release
 ./scripts/publish.ps1
 ```
 
-发布脚本生成 artifacts/RoutinesDebugger-win-x64 和同名 ZIP。输出目录需为新目录，也可使用 -OutputDirectory 指定其他位置。发布包包含三个工具及开发依赖，运行时读取所选炉石兄弟安装。
+发布脚本生成 artifacts/RoutinesDebugger-win-x64 和同名 ZIP。输出目录需为新目录，也可使用 -OutputDirectory 指定其他位置。发布包包含三个工具及开发依赖，语言资源仅保留简体中文（zh-Hans），运行时读取所选炉石兄弟安装。
 
 完整策略检查使用实际安装路径执行 --compile，再执行局面回放。现有完整策略编译后，还可以运行以下检查。
 
