@@ -57,6 +57,10 @@ internal static class Program
                 timer.Stop();
                 ((ComboBox)window.FindName("RoutineComboBox")).SelectedItem = "丨通用丨不设惩罚";
                 ((TextBox)window.FindName("TestPathBox")).Text = record;
+                typeof(MainWindow).GetMethod("RefreshRecentTestFiles", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(window, null);
+                var recent = ((ComboBox)window.FindName("RecentTestFilesComboBox")).SelectedItem;
+                Require(recent?.GetType().GetProperty("FullPath").GetValue(recent)?.ToString() == record,
+                    "Recent selection preserves an external imported record");
                 execute.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 object summary = typeof(MainWindow).GetField("_lastTestSummary", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(window);
                 Require(summary != null, "UI replay completes");

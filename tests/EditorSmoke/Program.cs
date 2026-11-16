@@ -8,6 +8,21 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Text;
 [assembly: System.Runtime.Versioning.SupportedOSPlatform("windows7.0")]
 
+using var helpOutput = new StringWriter();
+Require(RoutineHelper.App.RunCommandLine(new[] { "--help" }, Environment.CurrentDirectory, helpOutput) == 0
+    && helpOutput.ToString().Contains("--run-test"), "CLI help works without a configured runtime");
+foreach (string[] invalid in new[]
+{
+    new[] { "--run-test" }, new[] { "--compile", "path", "extra" },
+    new[] { "--run-latest-test", "policy", "extra" }, new[] { "--unknown" },
+    new[] { "--run-test", "\0" }
+})
+{
+    using var errorOutput = new StringWriter();
+    Require(RoutineHelper.App.RunCommandLine(invalid, Environment.CurrentDirectory, errorOutput) == 2,
+        "CLI rejects invalid input " + invalid[0]);
+}
+
 string temporaryRuntime = args.Length == 0 ? CreateFixtureRuntime() : null;
 try
 {
@@ -93,6 +108,30 @@ try
     var missingBuild = SilverfishBuildService.Compile(missingSource, outputPath, logPath);
     Require(missingBuild.Errors.HasErrors && missingBuild.Errors[0].ErrorText.Contains("Hearthbuddy"), "Missing runtime identifies dependency");
     Require(RoutineHelper.RoutineRuntime.NormalizeDefaultRoutinePath(sourceDirectory) == Path.GetDirectoryName(sourceDirectory), "Chinese and space path normalization");
+    string modernLog = Path.Combine(fixtureRoot, "Logs", "Data", "对局记录", "modern.txt");
+    string legacyLog = Path.Combine(sourceDirectory, "Test", "Data", "legacy.txt");
+    Directory.CreateDirectory(Path.GetDirectoryName(modernLog));
+    Directory.CreateDirectory(Path.GetDirectoryName(legacyLog));
+    File.WriteAllText(modernLog, "modern");
+    File.WriteAllText(legacyLog, "legacy");
+    File.SetLastWriteTimeUtc(modernLog, DateTime.UtcNow.AddMinutes(-2));
+    File.SetLastWriteTimeUtc(legacyLog, DateTime.UtcNow.AddMinutes(-1));
+    Require(RoutineHelper.RoutineRuntime.FindMostRecentTestFile(sourceDirectory) == legacyLog,
+        "Newest record spans modern and legacy folders");
+    string configPath = Path.Combine(fixtureRoot, "Settings", "routine.xml");
+    Parallel.For(0, 20, index => new RoutineHelper.XmlConfigUtil(configPath).Write(index.ToString(), "Key" + index));
+    Require(Enumerable.Range(0, 20).All(index => new RoutineHelper.XmlConfigUtil(configPath).Read("Key" + index) == index.ToString()),
+        "Concurrent configuration writes preserve every key");
+    File.WriteAllText(configPath, "<broken");
+    try
+    {
+        new RoutineHelper.XmlConfigUtil(configPath).Write("value", "NewKey");
+        Require(false, "Invalid config reports an error");
+    }
+    catch (System.Xml.XmlException)
+    {
+        Require(File.ReadAllText(configPath) == "<broken", "Failed config update preserves original data");
+    }
     GC.KeepAlive(firstAssembly);
 }
 finally
@@ -100,7 +139,7 @@ finally
     Directory.Delete(fixtureRoot, true);
 }
 
-var generated = ReflectionCodeGenerator.CodeGen.Generate(new[] { Card.Type, CardDB.Type, SilverfishWrapper.Settings.Type });
+var generated = ReflectionCodeGenerator.CodeGen.Generate(new[] { Card.Type, CardDB.Type, SilverfishWrapper.Settings.Type, typeof(OverloadFixture) });
 using (var stream = typeof(ReflectionCodeGenerator.CodeGen).Assembly.GetManifestResourceStream("ReflectionHelper.cs"))
 using (var reader = new StreamReader(stream)) generated.Add("ReflectionHelper.cs", reader.ReadToEnd());
 var generatedCompilation = CSharpCompilation.Create("GeneratedSmoke", generated.Values.Select(source => CSharpSyntaxTree.ParseText(source)),
@@ -125,6 +164,14 @@ object returnedCard = generatedDatabaseType.GetMethod("getCardDataFromID").Invok
     new[] { Enum.Parse(generatedId, "CS2_029") });
 Require(Card.Type.GetField("cardIDenum").GetValue(returnedCard).ToString() == "CS2_029", "Generated enum method argument");
 Require(generatedDatabaseType.GetMethod("cardNameENstringToEnum").Invoke(generatedDatabase, new object[] { "fireball" }).ToString() == "fireball", "Generated enum method return");
+Type overloadWrapperType = generatedAssembly.GetType("SilverfishWrapper.OverloadFixture");
+overloadWrapperType.GetField("Type").SetValue(null, typeof(OverloadFixture));
+object overloadInstance = Activator.CreateInstance(overloadWrapperType, new OverloadFixture());
+Require(overloadWrapperType.GetMethod("Choose").Invoke(overloadInstance, new object[] { new object() }).ToString() == "object",
+    "Generated object overload preserves original entry point");
+Require(overloadWrapperType.GetMethod("Choose__Uri").Invoke(overloadInstance, new object[] { new Uri("https://example.com") }).ToString() == "uri",
+    "Generated colliding overload remains callable");
+Require(overloadInstance.Equals(overloadWrapperType.GetField("Inst").GetValue(overloadInstance)), "Generated object Equals override works");
 Console.WriteLine("Editor smoke checks passed.");
 }
 finally
@@ -172,4 +219,12 @@ namespace HREngine.Bots
     var result = SilverfishBuildService.Compile(source, Path.Combine(root, "CompiledAssemblies", "Silverfish.dll"), Path.Combine(root, "compile.log"));
     if (result.Errors.HasErrors) throw new InvalidOperationException(string.Join("\n", result.Errors.Cast<object>()));
     return root;
+}
+
+public sealed class OverloadFixture
+{
+    public string Choose(object value) => "object";
+    public string Choose(Uri value) => "uri";
+    public override bool Equals(object value) => ReferenceEquals(this, value);
+    public override int GetHashCode() => 7;
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace ReflectionCodeGenerator;
 
@@ -62,14 +63,27 @@ internal static class CodeGen
                 body.AppendLine("    }");
             }
             var signatures = new HashSet<string>();
-            foreach (var method in type.GetMethods(Flags).Where(method => Named(method) && !method.IsGenericMethod && !method.IsSpecialName && Supported(method.ReturnType) && method.GetParameters().All(parameter => Supported(parameter.ParameterType))))
+            var methods = type.GetMethods(Flags)
+                .Where(method => Named(method) && !method.IsGenericMethod && !method.IsSpecialName
+                    && Supported(method.ReturnType) && method.GetParameters().All(parameter => Supported(parameter.ParameterType)))
+                .OrderBy(method => method.Name, StringComparer.Ordinal)
+                .ThenByDescending(method => method.GetBaseDefinition().DeclaringType == typeof(object))
+                .ThenByDescending(method => method.GetParameters().Any(parameter => parameter.ParameterType == typeof(object)))
+                .ThenBy(method => string.Join(",", method.GetParameters().Select(parameter => parameter.ParameterType.FullName)), StringComparer.Ordinal);
+            foreach (var method in methods)
             {
                 var parameters = method.GetParameters();
-                string signature = method.Name + "(" + string.Join(",", parameters.Select(parameter => WrapperType(parameter.ParameterType))) + ")";
-                if (!signatures.Add(signature))
+                string parameterSignature = "(" + string.Join(",", parameters.Select(parameter => WrapperType(parameter.ParameterType))) + ")";
+                string wrapperName = method.Name;
+                if (!signatures.Add(wrapperName + parameterSignature))
                 {
-                    Console.Error.WriteLine("Skipped wrapper signature collision: " + type.FullName + "." + signature);
-                    continue;
+                    string suffix = "__" + string.Join("_", parameters.Select(parameter =>
+                        Regex.Replace(parameter.ParameterType.Name, "[^a-zA-Z0-9_]", "_")));
+                    wrapperName = method.Name + suffix;
+                    int sequence = 2;
+                    while (!signatures.Add(wrapperName + parameterSignature))
+                        wrapperName = method.Name + suffix + "_" + sequence++;
+                    Console.Error.WriteLine($"Renamed wrapper overload: {type.FullName}.{method.Name}{parameterSignature} -> {wrapperName}");
                 }
                 RememberEnum(method.ReturnType, enums);
                 foreach (var parameter in parameters) RememberEnum(parameter.ParameterType, enums);
@@ -78,7 +92,9 @@ internal static class CodeGen
                 string signatureTypes = string.Join(", ", parameters.Select(parameter => RuntimeType(parameter.ParameterType, type)));
                 string target = method.IsStatic ? "null" : "Inst";
                 string call = $"Type.GetMethod({Quote(method.Name)}, Flags, null, new Type[] {{ {signatureTypes} }}, null).InvokeCompatible({target}, new object[] {{ {arguments} }})";
-                body.AppendLine($"    public {(method.IsStatic ? "static " : "")}{WrapperType(method.ReturnType)} @{method.Name}({declarations})");
+                string modifier = method.IsStatic ? "static " :
+                    method.IsVirtual && method.GetBaseDefinition().DeclaringType == typeof(object) && wrapperName == method.Name ? "override " : "";
+                body.AppendLine($"    public {modifier}{WrapperType(method.ReturnType)} @{wrapperName}({declarations})");
                 body.AppendLine(method.ReturnType == typeof(void)
                     ? $"        => {call};" : $"        => ReflectionHelper.ConvertValue<{WrapperType(method.ReturnType)}>({call});");
             }

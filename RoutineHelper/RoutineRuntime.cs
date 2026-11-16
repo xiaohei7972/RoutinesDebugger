@@ -166,28 +166,23 @@ public static class RoutineRuntime
             : Path.Combine(silverfishPath, "Test", "Data");
 	}
 
-	public static string FindMostRecentTestFile(string silverfishPath)
-	{
-		List<string> source = new List<string>
-		{
-			GetTestDataDirectory(silverfishPath),
-			Path.Combine(silverfishPath, "Test")
-		};
-		foreach (string item in source.Distinct(StringComparer.OrdinalIgnoreCase))
-		{
-			if (Directory.Exists(item))
-			{
-				FileInfo fileInfo = (from file in new DirectoryInfo(item).EnumerateFiles("*.txt", SearchOption.AllDirectories)
-					orderby file.LastWriteTimeUtc descending
-					select file).FirstOrDefault();
-				if (fileInfo != null)
-				{
-					return fileInfo.FullName;
-				}
-			}
-		}
-		return null;
-	}
+    internal static IEnumerable<FileInfo> EnumerateTestFiles(string silverfishPath)
+    {
+        var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true };
+        return new[] { GetTestDataDirectory(silverfishPath), Path.Combine(silverfishPath, "Test") }
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Where(Directory.Exists)
+            .SelectMany(directory => new DirectoryInfo(directory).EnumerateFiles("*.txt", options))
+            .DistinctBy(file => file.FullName, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public static string FindMostRecentTestFile(string silverfishPath)
+    {
+        return EnumerateTestFiles(silverfishPath)
+            .OrderByDescending(file => file.LastWriteTimeUtc)
+            .ThenBy(file => file.FullName, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault()?.FullName;
+    }
 
 	public static void ApplySettingsToWrapper()
 	{

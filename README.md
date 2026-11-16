@@ -17,7 +17,7 @@
 
 也可以直接打开 RoutineHelper.exe。首次启动会显示路径与编译窗口，后续启动加载已编译策略。修改策略后可通过界面重新编译。
 
-配置保存在程序旁的 Settings/Default/routine.xml，沿用 RoutinePath、SilverfishPath、LastRoutine 和 LastTestFile。程序也支持 HB_DEFAULTROUTINE_PATH、HB_SILVERFISH_PATH、ROUTINEHELPER_DEFAULTROUTINE_PATH 环境变量，已有有效配置优先使用。与炉石兄弟放在相邻层级时可自动发现策略目录。
+配置读写按文件路径串行执行，并以原子替换方式保存。配置保存在程序旁的 Settings/Default/routine.xml，沿用 RoutinePath、SilverfishPath、LastRoutine 和 LastTestFile。程序也支持 HB_DEFAULTROUTINE_PATH、HB_SILVERFISH_PATH、ROUTINEHELPER_DEFAULTROUTINE_PATH 环境变量，已有有效配置优先使用。与炉石兄弟放在相邻层级时可自动发现策略目录。
 
 运行依赖从选定安装目录及其 lib 中读取。主程序集须为可加载的 Hearthbuddy.dll。缺失依赖时，请核对完整安装目录和错误信息中的文件路径。
 
@@ -26,19 +26,20 @@
 在发布包目录中执行。相对输入路径以命令启动目录为基准。
 
 ```powershell
+./RoutineHelper.exe --help
 ./RoutineHelper.exe --compile 'D:/炉石兄弟/Routines/DefaultRoutine'
 ./RoutineHelper.exe --run-test 'D:/炉石兄弟/Logs/Data/对局记录/牌面.txt' '丨通用丨不设惩罚'
 ./RoutineHelper.exe --run-latest-test '丨通用丨不设惩罚'
 ./ReflectionCodeGenerator.exe './CompiledAssemblies/Silverfish.dll' './GeneratedWrappers'
 ```
 
-命令行重定向输出或等待退出时，也可以使用 dotnet RoutineHelper.dll 加相同参数。编译成功会保存策略目录配置。回放省略策略名称时采用已保存选择，再回退到首个可用策略。
+命令行重定向输出或等待退出时，也可以使用 dotnet RoutineHelper.dll 加相同参数。编译成功会保存策略目录配置。回放省略策略名称时采用已保存选择，再回退到首个可用策略。参数数量或路径无效时返回退出码 2。最近局面跨当前与历史日志目录按修改时间排序，外部导入文件会保留在当前选择中。
 
 RoutineHelper 退出码为 0 成功，1 编译或运行失败，2 参数或路径无效，3 未找到策略，4 策略类型缺失。生成器退出码为 0 成功，1 加载或生成失败，2 参数数量错误。
 
 编译结果保存在 CompiledAssemblies/Silverfish.dll，包含嵌入式调试符号。编译日志为 compile_attempt.log，命令行回放记录为 cli_test.log，算法日志位于 Logs。编译失败保留上次成功程序集，同一路径上的并发编译会串行执行。
 
-ReflectionCodeGenerator 读取指定策略程序集并生成包装类、所需枚举及 ReflectionHelper.cs。先配置策略目录，或设置 HB_DEFAULTROUTINE_PATH，以便解析炉石兄弟依赖。生成器会报告缺失类型和包装签名冲突，保留同一映射签名的首个方法。枚举通过名称转换。
+ReflectionCodeGenerator 读取指定策略程序集并生成包装类、所需枚举及 ReflectionHelper.cs。先配置策略目录，或设置 HB_DEFAULTROUTINE_PATH，以便解析炉石兄弟依赖。生成器会报告缺失类型。映射后的方法签名冲突时，保留原始入口，并为其他重载追加参数类型后缀，例如 Choose__Uri。Equals、GetHashCode 等覆写保留对应行为。枚举通过名称转换。
 
 旧局面记录中的省略字段会在输入阶段转换。缺少随从卡牌 ID 的历史格式通过当前 CardDB 的中文名称映射恢复，采用卡牌数据库的默认版本。历史日志缺失的变体信息会影响回放精度。优先使用包含卡牌 ID 的完整记录或 ENTITY_SNAPSHOT。
 

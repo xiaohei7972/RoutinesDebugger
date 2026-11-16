@@ -5001,72 +5001,54 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 		ExportCardButton.IsEnabled = true;
 	}
 
-	private void RefreshRecentTestFiles()
-	{
-		RecentTestFilesComboBox.ItemsSource = null;
-		RecentTestFilesComboBox.Items.Clear();
-		RecentTestFilesComboBox.IsEnabled = false;
-		if (!RoutineRuntime.TryResolveSilverfishPath(out var silverfishPath))
-		{
-			return;
-		}
-		string testDataDirectory = RoutineRuntime.GetTestDataDirectory(silverfishPath);
-		if (!Directory.Exists(testDataDirectory))
-		{
-			return;
-		}
-		List<RecentTestFileItem> list = (from file in (from file in new DirectoryInfo(testDataDirectory).EnumerateFiles("*.txt", SearchOption.AllDirectories)
-				orderby file.LastWriteTimeUtc descending
-				select file).Take(50)
-			select new RecentTestFileItem
-			{
-				FullPath = file.FullName,
-				DisplayName = BuildRecentTestDisplayName(testDataDirectory, file.FullName)
-			}).ToList();
-		_suppressRecentTestSelectionChanged = true;
-		RecentTestFilesComboBox.ItemsSource = list;
-		RecentTestFilesComboBox.DisplayMemberPath = "DisplayName";
-		RecentTestFilesComboBox.IsEnabled = list.Count > 0;
-		string desiredPath = (File.Exists(TestPathBox.Text) ? Path.GetFullPath(TestPathBox.Text) : null);
-		if (string.IsNullOrWhiteSpace(desiredPath))
-		{
-			XmlConfigUtil xmlConfigUtil = new XmlConfigUtil(_routineXml);
-			string path = xmlConfigUtil.Read("LastTestFile");
-			if (File.Exists(path))
-			{
-				desiredPath = Path.GetFullPath(path);
-			}
-		}
-		RecentTestFileItem recentTestFileItem = list.FirstOrDefault((RecentTestFileItem item) => string.Equals(item.FullPath, desiredPath, StringComparison.OrdinalIgnoreCase)) ?? list.FirstOrDefault();
-		if (recentTestFileItem != null)
-		{
-			RecentTestFilesComboBox.SelectedItem = recentTestFileItem;
-			if (string.IsNullOrWhiteSpace(TestPathBox.Text) || !File.Exists(TestPathBox.Text))
-			{
-				TestPathBox.Text = recentTestFileItem.FullPath;
-			}
-		}
-		_suppressRecentTestSelectionChanged = false;
-		RefreshSelectedTestFileContext();
-	}
+    private void RefreshRecentTestFiles()
+    {
+        string desiredPath = NormalizeExistingPath(TestPathBox.Text)
+            ?? NormalizeExistingPath(new XmlConfigUtil(_routineXml).Read("LastTestFile"));
+        _suppressRecentTestSelectionChanged = true;
+        try
+        {
+            RecentTestFilesComboBox.ItemsSource = null;
+            RecentTestFilesComboBox.Items.Clear();
+            RecentTestFilesComboBox.IsEnabled = false;
+            if (!RoutineRuntime.TryResolveSilverfishPath(out var silverfishPath)) return;
+            string testDataDirectory = RoutineRuntime.GetTestDataDirectory(silverfishPath);
+            List<RecentTestFileItem> files = RoutineRuntime.EnumerateTestFiles(silverfishPath)
+                .OrderByDescending(file => file.LastWriteTimeUtc)
+                .ThenBy(file => file.FullName, StringComparer.OrdinalIgnoreCase)
+                .Take(50)
+                .Select(file => new RecentTestFileItem
+                {
+                    FullPath = file.FullName,
+                    DisplayName = BuildRecentTestDisplayName(testDataDirectory, file.FullName)
+                }).ToList();
+            RecentTestFileItem selected = files.FirstOrDefault(file => string.Equals(file.FullPath, desiredPath, StringComparison.OrdinalIgnoreCase));
+            if (desiredPath != null && selected == null)
+            {
+                selected = new RecentTestFileItem { FullPath = desiredPath, DisplayName = desiredPath };
+                files.Insert(0, selected);
+                if (files.Count > 50) files.RemoveAt(files.Count - 1);
+            }
+            selected ??= files.FirstOrDefault();
+            RecentTestFilesComboBox.ItemsSource = files;
+            RecentTestFilesComboBox.DisplayMemberPath = "DisplayName";
+            RecentTestFilesComboBox.IsEnabled = files.Count > 0;
+            RecentTestFilesComboBox.SelectedItem = selected;
+            if (selected != null) TestPathBox.Text = selected.FullPath;
+        }
+        finally
+        {
+            _suppressRecentTestSelectionChanged = false;
+        }
+        RefreshSelectedTestFileContext();
+    }
 
-	private static string BuildRecentTestDisplayName(string testDataDirectory, string fullPath)
-	{
-		try
-		{
-			string text = Path.GetFullPath(testDataDirectory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-			string fullPath2 = Path.GetFullPath(fullPath);
-			if (fullPath2.StartsWith(text, StringComparison.OrdinalIgnoreCase))
-			{
-				return fullPath2.Substring(text.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Replace('\\', '/');
-			}
-			return Path.GetFileName(fullPath);
-		}
-		catch
-		{
-			return Path.GetFileName(fullPath);
-		}
-	}
+    private static string BuildRecentTestDisplayName(string testDataDirectory, string fullPath)
+    {
+        string relativePath = Path.GetRelativePath(testDataDirectory, fullPath);
+        return relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            || Path.IsPathRooted(relativePath) ? fullPath : relativePath.Replace('\\', '/');
+    }
 
 	private void ApplyTestSummary(TestRunSummary summary)
 	{
