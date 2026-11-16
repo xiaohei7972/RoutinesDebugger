@@ -1,0 +1,28 @@
+name: Windows build
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build tools and smoke runners
+        run: dotnet build RoutinesDebugger.sln -c Release --nologo
+      - name: Run standalone regression checks
+        run: dotnet run --project tests/EditorSmoke -c Release --no-build
+      - name: Package Windows applications
+        shell: pwsh
+        run: ./scripts/publish.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RoutinesDebugger-win-x64
+          path: artifacts/RoutinesDebugger-win-x64.zip
+          if-no-files-found: error

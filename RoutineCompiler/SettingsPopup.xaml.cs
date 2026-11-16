@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,6 +31,7 @@ namespace RoutineCompiler
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            silverfishPath = SilverfishPathTextBox.Text;
             DialogResult = true;
             this.Close();
         }

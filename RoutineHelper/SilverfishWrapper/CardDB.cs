@@ -1,251 +1,331 @@
-using System;
+﻿using System;
 using System.Reflection;
 
-namespace SilverfishWrapper
+namespace SilverfishWrapper;
+
+public class CardDB
 {
-    public class CardDB
-    {
-        public object Inst;
-        public static Type Type;
+	public object Inst;
 
-        public CardDB(object inst)
-        {
-            this.Inst = inst;
-        }
-        const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
-        public object cardlist
-        {
-            get
-            {
-                return (object)Type.GetField("cardlist", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("cardlist", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public static Type Type;
 
-        public object cardidToCardList
-        {
-            get
-            {
-                return (object)Type.GetField("cardidToCardList", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("cardidToCardList", AllFlags).SetValue(Inst, value);
-            }
-        }
+	private const BindingFlags AllFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
-        public object carddbfidToCardList
-        {
-            get
-            {
-                return (object)Type.GetField("carddbfidToCardList", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("carddbfidToCardList", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object AllCards
+	{
+		get
+		{
+			return Type.GetField("AllCards", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("AllCards", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object cardNameCNToCardList
-        {
-            get
-            {
-                return (object)Type.GetField("cardNameCNToCardList", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("cardNameCNToCardList", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object cardlist
+	{
+		get
+		{
+			return Type.GetField("cardlist", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("cardlist", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object cardNameENToCardList
-        {
-            get
-            {
-                return (object)Type.GetField("cardNameENToCardList", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("cardNameENToCardList", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object cardidToCardList
+	{
+		get
+		{
+			return Type.GetField("cardidToCardList", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("cardidToCardList", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object unknownCard
-        {
-            get
-            {
-                return (object)Type.GetField("unknownCard", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("unknownCard", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object carddbfidToCardList
+	{
+		get
+		{
+			return Type.GetField("carddbfidToCardList", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("carddbfidToCardList", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean installedWrong
-        {
-            get
-            {
-                return (System.Boolean)Type.GetField("installedWrong", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("installedWrong", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object cardNameCNToCardList
+	{
+		get
+		{
+			return Type.GetField("cardNameCNToCardList", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("cardNameCNToCardList", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object burlyrockjaw
-        {
-            get
-            {
-                return (object)Type.GetField("burlyrockjaw", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("burlyrockjaw", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object cardNameENToCardList
+	{
+		get
+		{
+			return Type.GetField("cardNameENToCardList", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("cardNameENToCardList", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object treasurePools
-        {
-            get
-            {
-                return (object)Type.GetField("treasurePools", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("treasurePools", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object unknownCard
+	{
+		get
+		{
+			return Type.GetField("unknownCard", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("unknownCard", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public static object instance
-        {
-            get
-            {
-                return (object)Type.GetField("instance", AllFlags).GetValue(null);
-            }
-            set
-            {
-                Type.GetField("instance", AllFlags).SetValue(null, value);
-            }
-        }
+	public bool installedWrong
+	{
+		get
+		{
+			return (bool)Type.GetField("installedWrong", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("installedWrong", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public static object Instance
-        {
-            get
-            {
-                return (object)Type.GetProperty("Instance", AllFlags).GetValue(null);
-            }
-        }
+	public object burlyrockjaw
+	{
+		get
+		{
+			return Type.GetField("burlyrockjaw", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("burlyrockjaw", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object chnNameToCard(string chnName)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.String);
-            return (object)Type.GetMethod("chnNameToCard", AllFlags, null, sigs, null).Invoke(Inst, new object[] { chnName });
-        }
+	public object treasurePools
+	{
+		get
+		{
+			return Type.GetField("treasurePools", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("treasurePools", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public cardIDEnum cardIdstringToEnum(string s)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.String);
-            return (cardIDEnum)Type.GetMethod("cardIdstringToEnum", AllFlags, null, sigs, null).Invoke(Inst, new object[] { s });
-        }
+	public static object Log
+	{
+		get
+		{
+			return Type.GetField("Log", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(null);
+		}
+		set
+		{
+			Type.GetField("Log", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetValue(null, value);
+		}
+	}
 
-        public cardNameEN cardNameENstringToEnum(string s)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.String);
-            return (cardNameEN)Type.GetMethod("cardNameENstringToEnum", AllFlags, null, sigs, null).Invoke(Inst, new object[] { s });
-        }
+	public static object instance
+	{
+		get
+		{
+			return Type.GetField("instance", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(null);
+		}
+		set
+		{
+			Type.GetField("instance", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetValue(null, value);
+		}
+	}
 
-        public cardNameCN cardNameENstringToEnumCN(string s)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.String);
-            return (cardNameCN)Type.GetMethod("cardNameENstringToEnumCN", AllFlags, null, sigs, null).Invoke(Inst, new object[] { s });
-        }
+	public static object raceMapping
+	{
+		get
+		{
+			return Type.GetField("raceMapping", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(null);
+		}
+		set
+		{
+			Type.GetField("raceMapping", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetValue(null, value);
+		}
+	}
 
-        public cardNameCN cardNameCNstringToEnum(string s)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.String);
-            return (cardNameCN)Type.GetMethod("cardNameCNstringToEnum", AllFlags, null, sigs, null).Invoke(Inst, new object[] { s });
-        }
+	public object cards
+	{
+		get
+		{
+			return Type.GetProperty("cards", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetProperty("cards", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object getCardData(cardNameEN cardname)
-        {
-            var sigs = new Type[1];
-            sigs[0] = Type.Assembly.GetType("HREngine.Bots.CardDB+cardNameEN");
-            return (object)Type.GetMethod("getCardData", AllFlags, null, sigs, null).Invoke(Inst, new object[] { cardname });
-        }
+	public static object Instance => Type.GetProperty("Instance", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(null);
 
-        public object getCardData(cardNameCN cardname)
-        {
-            var sigs = new Type[1];
-            sigs[0] = Type.Assembly.GetType("HREngine.Bots.CardDB+cardNameCN");
-            return (object)Type.GetMethod("getCardData", AllFlags, null, sigs, null).Invoke(Inst, new object[] { cardname });
-        }
+	public CardDB(object inst)
+	{
+		Inst = inst;
+	}
 
-        public object getCardDataFromID(cardIDEnum id)
-        {
-            var sigs = new Type[1];
-            sigs[0] = Type.Assembly.GetType("HREngine.Bots.CardDB+cardIDEnum");
-            return (object)Type.GetMethod("getCardDataFromID", AllFlags, null, sigs, null).Invoke(Inst, new object[] { id });
-        }
+	public object chnNameToCard(string chnName)
+	{
+		Type[] types = new Type[1] { typeof(string) };
+		return Type.GetMethod("chnNameToCard", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { chnName });
+	}
 
-        public object getCardDataFromDbfID(string dbfID)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.String);
-            return (object)Type.GetMethod("getCardDataFromDbfID", AllFlags, null, sigs, null).Invoke(Inst, new object[] { dbfID });
-        }
+	public cardIDEnum cardIdstringToEnum(string s)
+	{
+		Type[] types = new Type[1] { typeof(string) };
+		return ReflectionHelper.ConvertValue<cardIDEnum>(Type.GetMethod("cardIdstringToEnum", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { s }));
+	}
 
-        public void setAdditionalData()
-        {
-            var sigs = new Type[0];
-            Type.GetMethod("setAdditionalData", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public cardNameEN cardNameENstringToEnum(string s)
+	{
+		Type[] types = new Type[1] { typeof(string) };
+		return ReflectionHelper.ConvertValue<cardNameEN>(Type.GetMethod("cardNameENstringToEnum", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { s }));
+	}
 
-        public System.Boolean Equals(object obj)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.Object);
-            return (System.Boolean)Type.GetMethod("Equals", AllFlags, null, sigs, null).Invoke(Inst, new object[] { obj });
-        }
+	public cardNameCN cardNameENstringToEnumCN(string s)
+	{
+		Type[] types = new Type[1] { typeof(string) };
+		return ReflectionHelper.ConvertValue<cardNameCN>(Type.GetMethod("cardNameENstringToEnumCN", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { s }));
+	}
 
-        public System.Int32 GetHashCode()
-        {
-            var sigs = new Type[0];
-            return (System.Int32)Type.GetMethod("GetHashCode", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public cardNameCN cardNameCNstringToEnum(string s)
+	{
+		Type[] types = new Type[1] { typeof(string) };
+		return ReflectionHelper.ConvertValue<cardNameCN>(Type.GetMethod("cardNameCNstringToEnum", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { s }));
+	}
 
-        public void Finalize()
-        {
-            var sigs = new Type[0];
-            Type.GetMethod("Finalize", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public Race raceNameStringToEnum(string s)
+	{
+		Type[] types = new Type[1] { typeof(string) };
+		return ReflectionHelper.ConvertValue<Race>(Type.GetMethod("raceNameStringToEnum", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { s }));
+	}
 
-        public object GetType()
-        {
-            var sigs = new Type[0];
-            return (object)Type.GetMethod("GetType", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public SpellSchool spellSchoolNameStringToEnum(string s)
+	{
+		Type[] types = new Type[1] { typeof(string) };
+		return ReflectionHelper.ConvertValue<SpellSchool>(Type.GetMethod("spellSchoolNameStringToEnum", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { s }));
+	}
 
-        public object MemberwiseClone()
-        {
-            var sigs = new Type[0];
-            return (object)Type.GetMethod("MemberwiseClone", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public int getRequiredTargetCount(object card)
+	{
+		Type[] types = new Type[1] { Type.Assembly.GetType("HREngine.Bots.CardDB+Card") };
+		return (int)Type.GetMethod("getRequiredTargetCount", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { card });
+	}
 
-        public string ToString()
-        {
-            var sigs = new Type[0];
-            return (string)Type.GetMethod("ToString", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public object GetAllCards()
+	{
+		Type[] types = new Type[0];
+		return Type.GetMethod("GetAllCards", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
 
-    }
+	public object GetCardByName(string cardName)
+	{
+		Type[] types = new Type[1] { typeof(string) };
+		return Type.GetMethod("GetCardByName", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { cardName });
+	}
+
+	public object GetAllDeathrattleCards()
+	{
+		Type[] types = new Type[0];
+		return Type.GetMethod("GetAllDeathrattleCards", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
+
+	public object GetMageSpells()
+	{
+		Type[] types = new Type[0];
+		return Type.GetMethod("GetMageSpells", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
+
+	public object GetAllSpells()
+	{
+		Type[] types = new Type[0];
+		return Type.GetMethod("GetAllSpells", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
+
+	public object GetAllMinions()
+	{
+		Type[] types = new Type[0];
+		return Type.GetMethod("GetAllMinions", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
+
+	public object getCostMinions(int cost)
+	{
+		Type[] types = new Type[1] { typeof(int) };
+		return Type.GetMethod("getCostMinions", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { cost });
+	}
+
+	public object getAllWeapons()
+	{
+		Type[] types = new Type[0];
+		return Type.GetMethod("getAllWeapons", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
+
+	public object getCardData(cardNameEN cardname)
+	{
+		Type[] types = new Type[1] { Type.Assembly.GetType("HREngine.Bots.CardDB+cardNameEN") };
+		return Type.GetMethod("getCardData", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { cardname });
+	}
+
+	public object getCardData(cardNameCN cardname)
+	{
+		Type[] types = new Type[1] { Type.Assembly.GetType("HREngine.Bots.CardDB+cardNameCN") };
+		return Type.GetMethod("getCardData", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { cardname });
+	}
+
+	public object getCardDataFromID(cardIDEnum id)
+	{
+		Type[] types = new Type[1] { Type.Assembly.GetType("HREngine.Bots.CardDB+cardIDEnum") };
+		return Type.GetMethod("getCardDataFromID", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { id });
+	}
+
+	public object getCardDataFromDbfID(string dbfID)
+	{
+		Type[] types = new Type[1] { typeof(string) };
+		return Type.GetMethod("getCardDataFromDbfID", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { dbfID });
+	}
+
+	public void setAdditionalData()
+	{
+		Type[] types = new Type[0];
+		Type.GetMethod("setAdditionalData", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
+
+	public void setupShatterData()
+	{
+		Type[] types = new Type[0];
+		Type.GetMethod("setupShatterData", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
+
+	public void setupShatterCard(cardIDEnum main, cardIDEnum left, cardIDEnum right)
+	{
+		Type[] types = new Type[3]
+		{
+			Type.Assembly.GetType("HREngine.Bots.CardDB+cardIDEnum"),
+			Type.Assembly.GetType("HREngine.Bots.CardDB+cardIDEnum"),
+			Type.Assembly.GetType("HREngine.Bots.CardDB+cardIDEnum")
+		};
+		Type.GetMethod("setupShatterCard", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[3] { main, left, right });
+	}
 }
