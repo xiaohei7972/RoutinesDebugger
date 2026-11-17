@@ -1,352 +1,588 @@
-using System;
+﻿using System;
 using System.Reflection;
 
-namespace SilverfishWrapper
+namespace SilverfishWrapper;
+
+public class Handcard
 {
-    public class Handcard
-    {
-        public object Inst;
-        public static Type Type;
+	public object Inst;
 
-        public Handcard(object inst)
-        {
-            this.Inst = inst;
-        }
-        const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
-        public System.Int32 position
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("position", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("position", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public static Type Type;
 
-        public System.Int32 entity
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("entity", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("entity", AllFlags).SetValue(Inst, value);
-            }
-        }
+	private const BindingFlags AllFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
-        public System.Int32 manacost
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("manacost", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("manacost", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public bool isQuickdrawActive
+	{
+		get
+		{
+			return (bool)Type.GetField("isQuickdrawActive", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("isQuickdrawActive", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 addattack
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("addattack", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("addattack", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int drawnTurn
+	{
+		get
+		{
+			return (int)Type.GetField("drawnTurn", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("drawnTurn", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 addHp
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("addHp", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("addHp", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public bool isMergedShatter
+	{
+		get
+		{
+			return (bool)Type.GetField("isMergedShatter", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("isMergedShatter", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object card
-        {
-            get
-            {
-                return (object)Type.GetField("card", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("card", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int manaSpentWhileHolding
+	{
+		get
+		{
+			return (int)Type.GetField("manaSpentWhileHolding", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("manaSpentWhileHolding", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object target
-        {
-            get
-            {
-                return (object)Type.GetField("target", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("target", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public bool startedInDeck
+	{
+		get
+		{
+			return (bool)Type.GetField("startedInDeck", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("startedInDeck", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 poweredUp
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("poweredUp", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("poweredUp", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public cardIDEnum baseCardId
+	{
+		get
+		{
+			return ReflectionHelper.ConvertValue<cardIDEnum>(Type.GetField("baseCardId", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst));
+		}
+		set
+		{
+			Type.GetField("baseCardId", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 darkmoon_num
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("darkmoon_num", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("darkmoon_num", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int handSpellDamageBonus
+	{
+		get
+		{
+			return (int)Type.GetField("handSpellDamageBonus", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("handSpellDamageBonus", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 extraParam2
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("extraParam2", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("extraParam2", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int discoveredTurn
+	{
+		get
+		{
+			return (int)Type.GetField("discoveredTurn", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("discoveredTurn", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean extraParam3
-        {
-            get
-            {
-                return (System.Boolean)Type.GetField("extraParam3", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("extraParam3", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object discoverFollowupOptions
+	{
+		get
+		{
+			return Type.GetField("discoverFollowupOptions", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("discoverFollowupOptions", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 SCRIPT_DATA_NUM_1
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("SCRIPT_DATA_NUM_1", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("SCRIPT_DATA_NUM_1", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public bool costsHealthInsteadOfMana
+	{
+		get
+		{
+			return (bool)Type.GetField("costsHealthInsteadOfMana", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("costsHealthInsteadOfMana", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 TAG_ONE_TURN_EFFECT
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("TAG_ONE_TURN_EFFECT", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("TAG_ONE_TURN_EFFECT", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public cardIDEnum jarStoredMinionCardId
+	{
+		get
+		{
+			return ReflectionHelper.ConvertValue<cardIDEnum>(Type.GetField("jarStoredMinionCardId", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst));
+		}
+		set
+		{
+			Type.GetField("jarStoredMinionCardId", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 LUNAHIGHLIGHTHINT
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("LUNAHIGHLIGHTHINT", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("LUNAHIGHLIGHTHINT", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int jarStoredMinionAttackBonus
+	{
+		get
+		{
+			return (int)Type.GetField("jarStoredMinionAttackBonus", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("jarStoredMinionAttackBonus", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 scheme
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("scheme", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("scheme", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int jarStoredMinionHealthBonus
+	{
+		get
+		{
+			return (int)Type.GetField("jarStoredMinionHealthBonus", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("jarStoredMinionHealthBonus", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object enchs
-        {
-            get
-            {
-                return (object)Type.GetField("enchs", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("enchs", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int position
+	{
+		get
+		{
+			return (int)Type.GetField("position", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("position", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean discovered
-        {
-            get
-            {
-                return (System.Boolean)Type.GetField("discovered", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("discovered", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int entity
+	{
+		get
+		{
+			return (int)Type.GetField("entity", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("entity", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean temporary
-        {
-            get
-            {
-                return (System.Boolean)Type.GetField("temporary", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("temporary", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int manacost
+	{
+		get
+		{
+			return (int)Type.GetField("manacost", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("manacost", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 conditionalCount
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("conditionalCount", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("conditionalCount", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int addattack
+	{
+		get
+		{
+			return (int)Type.GetField("addattack", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("addattack", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object conditionalList
-        {
-            get
-            {
-                return (object)Type.GetField("conditionalList", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("conditionalList", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int addHp
+	{
+		get
+		{
+			return (int)Type.GetField("addHp", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("addHp", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public string Status
-        {
-            get
-            {
-                return (string)Type.GetProperty("Status", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetProperty("Status", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object card
+	{
+		get
+		{
+			return Type.GetField("card", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("card", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public string OnlineCardImage
-        {
-            get
-            {
-                return (string)Type.GetProperty("OnlineCardImage", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetProperty("OnlineCardImage", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object target
+	{
+		get
+		{
+			return Type.GetField("target", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("target", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public string OnlineCardTile
-        {
-            get
-            {
-                return (string)Type.GetProperty("OnlineCardTile", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetProperty("OnlineCardTile", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object target2
+	{
+		get
+		{
+			return Type.GetField("target2", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("target2", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public void setHCtoHC(object hc)
-        {
-            var sigs = new Type[1];
-            sigs[0] = Type.Assembly.GetType("HREngine.Bots.Handmanager+Handcard");
-            Type.GetMethod("setHCtoHC", AllFlags, null, sigs, null).Invoke(Inst, new object[] { hc });
-        }
+	public object target3
+	{
+		get
+		{
+			return Type.GetField("target3", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("target3", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 getManaCost(object p)
-        {
-            var sigs = new Type[1];
-            sigs[0] = Type.Assembly.GetType("HREngine.Bots.Playfield");
-            return (System.Int32)Type.GetMethod("getManaCost", AllFlags, null, sigs, null).Invoke(Inst, new object[] { p });
-        }
+	public int targetCount
+	{
+		get
+		{
+			return (int)Type.GetField("targetCount", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("targetCount", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean canplayCard(object p, System.Boolean own)
-        {
-            var sigs = new Type[2];
-            sigs[0] = Type.Assembly.GetType("HREngine.Bots.Playfield");
-            sigs[1] = typeof(System.Boolean);
-            return (System.Boolean)Type.GetMethod("canplayCard", AllFlags, null, sigs, null).Invoke(Inst, new object[] { p, own });
-        }
+	public int poweredUp
+	{
+		get
+		{
+			return (int)Type.GetField("poweredUp", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("poweredUp", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean Equals(object obj)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.Object);
-            return (System.Boolean)Type.GetMethod("Equals", AllFlags, null, sigs, null).Invoke(Inst, new object[] { obj });
-        }
+	public int darkmoon_num
+	{
+		get
+		{
+			return (int)Type.GetField("darkmoon_num", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("darkmoon_num", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 GetHashCode()
-        {
-            var sigs = new Type[0];
-            return (System.Int32)Type.GetMethod("GetHashCode", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public int extraParam2
+	{
+		get
+		{
+			return (int)Type.GetField("extraParam2", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("extraParam2", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public void Finalize()
-        {
-            var sigs = new Type[0];
-            Type.GetMethod("Finalize", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public bool extraParam3
+	{
+		get
+		{
+			return (bool)Type.GetField("extraParam3", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("extraParam3", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object GetType()
-        {
-            var sigs = new Type[0];
-            return (object)Type.GetMethod("GetType", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public int SCRIPT_DATA_NUM_1
+	{
+		get
+		{
+			return (int)Type.GetField("SCRIPT_DATA_NUM_1", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("SCRIPT_DATA_NUM_1", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object MemberwiseClone()
-        {
-            var sigs = new Type[0];
-            return (object)Type.GetMethod("MemberwiseClone", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public int SCRIPT_DATA_NUM_2
+	{
+		get
+		{
+			return (int)Type.GetField("SCRIPT_DATA_NUM_2", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("SCRIPT_DATA_NUM_2", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public string ToString()
-        {
-            var sigs = new Type[0];
-            return (string)Type.GetMethod("ToString", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public int MODULAR_ENTITY_PART_1
+	{
+		get
+		{
+			return (int)Type.GetField("MODULAR_ENTITY_PART_1", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("MODULAR_ENTITY_PART_1", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-    }
+	public int MODULAR_ENTITY_PART_2
+	{
+		get
+		{
+			return (int)Type.GetField("MODULAR_ENTITY_PART_2", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("MODULAR_ENTITY_PART_2", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public int TAG_ONE_TURN_EFFECT
+	{
+		get
+		{
+			return (int)Type.GetField("TAG_ONE_TURN_EFFECT", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("TAG_ONE_TURN_EFFECT", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public int LUNAHIGHLIGHTHINT
+	{
+		get
+		{
+			return (int)Type.GetField("LUNAHIGHLIGHTHINT", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("LUNAHIGHLIGHTHINT", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public int scheme
+	{
+		get
+		{
+			return (int)Type.GetField("scheme", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("scheme", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public object enchs
+	{
+		get
+		{
+			return Type.GetField("enchs", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("enchs", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public bool discovered
+	{
+		get
+		{
+			return (bool)Type.GetField("discovered", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("discovered", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public bool temporary
+	{
+		get
+		{
+			return (bool)Type.GetField("temporary", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("temporary", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public bool valeeraShadow
+	{
+		get
+		{
+			return (bool)Type.GetField("valeeraShadow", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("valeeraShadow", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public int conditionalCount
+	{
+		get
+		{
+			return (int)Type.GetField("conditionalCount", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("conditionalCount", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public object conditionalList
+	{
+		get
+		{
+			return Type.GetField("conditionalList", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("conditionalList", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public string Status
+	{
+		get
+		{
+			return (string)Type.GetProperty("Status", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetProperty("Status", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public string OnlineCardImage
+	{
+		get
+		{
+			return (string)Type.GetProperty("OnlineCardImage", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetProperty("OnlineCardImage", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public string OnlineCardTile
+	{
+		get
+		{
+			return (string)Type.GetProperty("OnlineCardTile", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetProperty("OnlineCardTile", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
+
+	public Handcard(object inst)
+	{
+		Inst = inst;
+	}
+
+	public void MarkDrawn(int currentTurn)
+	{
+		Type[] types = new Type[1] { typeof(int) };
+		Type.GetMethod("MarkDrawn", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { currentTurn });
+	}
+
+	public void UpdateQuickdrawStatus(int currentTurn)
+	{
+		Type[] types = new Type[1] { typeof(int) };
+		Type.GetMethod("UpdateQuickdrawStatus", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { currentTurn });
+	}
+
+	public void updateDIYCard(int hc_part_1, int hc_part_2)
+	{
+		Type[] types = new Type[2]
+		{
+			typeof(int),
+			typeof(int)
+		};
+		Type.GetMethod("updateDIYCard", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[2] { hc_part_1, hc_part_2 });
+	}
+
+	public void getDIYCard(object part1, object part2)
+	{
+		Type[] types = new Type[2]
+		{
+			Type.Assembly.GetType("HREngine.Bots.CardDB+Card"),
+			Type.Assembly.GetType("HREngine.Bots.CardDB+Card")
+		};
+		Type.GetMethod("getDIYCard", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[2] { part1, part2 });
+	}
+
+	public void setHCtoHC(object hc)
+	{
+		Type[] types = new Type[1] { Type.Assembly.GetType("HREngine.Bots.Handmanager+Handcard") };
+		Type.GetMethod("setHCtoHC", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { hc });
+	}
+
+	public int getManaCost(object p)
+	{
+		Type[] types = new Type[1] { Type.Assembly.GetType("HREngine.Bots.Playfield") };
+		return (int)Type.GetMethod("getManaCost", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { p });
+	}
+
+	public bool canplayCard(object p, bool own)
+	{
+		Type[] types = new Type[2]
+		{
+			Type.Assembly.GetType("HREngine.Bots.Playfield"),
+			typeof(bool)
+		};
+		return (bool)Type.GetMethod("canplayCard", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[2] { p, own });
+	}
 }

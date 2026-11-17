@@ -1,0 +1,11 @@
+﻿namespace SilverfishWrapper;
+
+public enum TAG_RARITY
+{
+	INVALID,
+	COMMON,
+	FREE,
+	RARE,
+	EPIC,
+	LEGENDARY
+}

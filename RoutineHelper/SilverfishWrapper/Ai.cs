@@ -1,526 +1,487 @@
-using System;
+﻿using System;
 using System.Reflection;
 
-namespace SilverfishWrapper
+namespace SilverfishWrapper;
+
+public class Ai
 {
-    public class Ai
-    {
-        public object Inst;
-        public static Type Type;
+	public object Inst;
 
-        public Ai(object inst)
-        {
-            this.Inst = inst;
-        }
-        const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
-        public System.Int32 maxdeep
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("maxdeep", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("maxdeep", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public static Type Type;
 
-        public System.Int32 maxwide
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("maxwide", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("maxwide", AllFlags).SetValue(Inst, value);
-            }
-        }
+	private const BindingFlags AllFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
-        public System.Int32 maxCal
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("maxCal", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("maxCal", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int maxdeep
+	{
+		get
+		{
+			return (int)Type.GetField("maxdeep", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("maxdeep", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 playaroundprob2
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("playaroundprob2", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("playaroundprob2", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int maxwide
+	{
+		get
+		{
+			return (int)Type.GetField("maxwide", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("maxwide", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 maxNumberOfThreads
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("maxNumberOfThreads", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("maxNumberOfThreads", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int maxCal
+	{
+		get
+		{
+			return (int)Type.GetField("maxCal", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("maxCal", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean usePenalityManager
-        {
-            get
-            {
-                return (System.Boolean)Type.GetField("usePenalityManager", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("usePenalityManager", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int playaroundprob2
+	{
+		get
+		{
+			return (int)Type.GetField("playaroundprob2", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("playaroundprob2", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean useCutingTargets
-        {
-            get
-            {
-                return (System.Boolean)Type.GetField("useCutingTargets", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("useCutingTargets", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int maxNumberOfThreads
+	{
+		get
+		{
+			return (int)Type.GetField("maxNumberOfThreads", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("maxNumberOfThreads", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean dontRecalc
-        {
-            get
-            {
-                return (System.Boolean)Type.GetField("dontRecalc", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("dontRecalc", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public bool usePenalityManager
+	{
+		get
+		{
+			return (bool)Type.GetField("usePenalityManager", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("usePenalityManager", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean useLethalCheck
-        {
-            get
-            {
-                return (System.Boolean)Type.GetField("useLethalCheck", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("useLethalCheck", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public bool useCutingTargets
+	{
+		get
+		{
+			return (bool)Type.GetField("useCutingTargets", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("useCutingTargets", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean useComparison
-        {
-            get
-            {
-                return (System.Boolean)Type.GetField("useComparison", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("useComparison", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public bool dontRecalc
+	{
+		get
+		{
+			return (bool)Type.GetField("dontRecalc", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("dontRecalc", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object bestplay
-        {
-            get
-            {
-                return (object)Type.GetField("bestplay", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("bestplay", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public bool useLethalCheck
+	{
+		get
+		{
+			return (bool)Type.GetField("useLethalCheck", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("useLethalCheck", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 lethalMissing
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("lethalMissing", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("lethalMissing", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public bool useComparison
+	{
+		get
+		{
+			return (bool)Type.GetField("useComparison", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("useComparison", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object mainTurnSimulator
-        {
-            get
-            {
-                return (object)Type.GetField("mainTurnSimulator", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("mainTurnSimulator", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object bestplay
+	{
+		get
+		{
+			return Type.GetField("bestplay", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("bestplay", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object enemyTurnSim
-        {
-            get
-            {
-                return (object)Type.GetField("enemyTurnSim", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("enemyTurnSim", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public int lethalMissing
+	{
+		get
+		{
+			return (int)Type.GetField("lethalMissing", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("lethalMissing", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object nextTurnSimulator
-        {
-            get
-            {
-                return (object)Type.GetField("nextTurnSimulator", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("nextTurnSimulator", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object mainTurnSimulator
+	{
+		get
+		{
+			return Type.GetField("mainTurnSimulator", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("mainTurnSimulator", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object enemySecondTurnSim
-        {
-            get
-            {
-                return (object)Type.GetField("enemySecondTurnSim", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("enemySecondTurnSim", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object enemyTurnSim
+	{
+		get
+		{
+			return Type.GetField("enemyTurnSim", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("enemyTurnSim", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public string currentCalculatedBoard
-        {
-            get
-            {
-                return (string)Type.GetField("currentCalculatedBoard", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("currentCalculatedBoard", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object nextTurnSimulator
+	{
+		get
+		{
+			return Type.GetField("nextTurnSimulator", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("nextTurnSimulator", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object penman
-        {
-            get
-            {
-                return (object)Type.GetField("penman", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("penman", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object enemySecondTurnSim
+	{
+		get
+		{
+			return Type.GetField("enemySecondTurnSim", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("enemySecondTurnSim", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object settings
-        {
-            get
-            {
-                return (object)Type.GetField("settings", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("settings", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public string currentCalculatedBoard
+	{
+		get
+		{
+			return (string)Type.GetField("currentCalculatedBoard", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("currentCalculatedBoard", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object posmoves
-        {
-            get
-            {
-                return (object)Type.GetField("posmoves", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("posmoves", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object penman
+	{
+		get
+		{
+			return Type.GetField("penman", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("penman", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object hp
-        {
-            get
-            {
-                return (object)Type.GetField("hp", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("hp", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object settings
+	{
+		get
+		{
+			return Type.GetField("settings", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("settings", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object hm
-        {
-            get
-            {
-                return (object)Type.GetField("hm", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("hm", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object posmoves
+	{
+		get
+		{
+			return Type.GetField("posmoves", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("posmoves", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object help
-        {
-            get
-            {
-                return (object)Type.GetField("help", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("help", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object hp
+	{
+		get
+		{
+			return Type.GetField("hp", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("hp", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object bestmove
-        {
-            get
-            {
-                return (object)Type.GetField("bestmove", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("bestmove", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object hm
+	{
+		get
+		{
+			return Type.GetField("hm", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("hm", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Single bestmoveValue
-        {
-            get
-            {
-                return (System.Single)Type.GetField("bestmoveValue", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("bestmoveValue", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object help
+	{
+		get
+		{
+			return Type.GetField("help", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("help", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object nextMoveGuess
-        {
-            get
-            {
-                return (object)Type.GetField("nextMoveGuess", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("nextMoveGuess", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object bestmove
+	{
+		get
+		{
+			return Type.GetField("bestmove", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("bestmove", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object botBase
-        {
-            get
-            {
-                return (object)Type.GetField("botBase", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("botBase", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public float bestmoveValue
+	{
+		get
+		{
+			return (float)Type.GetField("bestmoveValue", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("bestmoveValue", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public object bestActions
-        {
-            get
-            {
-                return (object)Type.GetField("bestActions", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("bestActions", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object nextMoveGuess
+	{
+		get
+		{
+			return Type.GetField("nextMoveGuess", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("nextMoveGuess", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean secondturnsim
-        {
-            get
-            {
-                return (System.Boolean)Type.GetField("secondturnsim", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("secondturnsim", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object botBase
+	{
+		get
+		{
+			return Type.GetField("botBase", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("botBase", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Boolean playaround
-        {
-            get
-            {
-                return (System.Boolean)Type.GetField("playaround", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("playaround", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object bestActions
+	{
+		get
+		{
+			return Type.GetField("bestActions", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("bestActions", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public static object instance
-        {
-            get
-            {
-                return (object)Type.GetField("instance", AllFlags).GetValue(null);
-            }
-            set
-            {
-                Type.GetField("instance", AllFlags).SetValue(null, value);
-            }
-        }
+	public bool secondturnsim
+	{
+		get
+		{
+			return (bool)Type.GetField("secondturnsim", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("secondturnsim", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public static object Instance
-        {
-            get
-            {
-                return (object)Type.GetProperty("Instance", AllFlags).GetValue(null);
-            }
-        }
+	public bool playaround
+	{
+		get
+		{
+			return (bool)Type.GetField("playaround", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("playaround", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public void setMaxWide(System.Int32 mw)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.Int32);
-            Type.GetMethod("setMaxWide", AllFlags, null, sigs, null).Invoke(Inst, new object[] { mw });
-        }
+	public static object instance
+	{
+		get
+		{
+			return Type.GetField("instance", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(null);
+		}
+		set
+		{
+			Type.GetField("instance", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetValue(null, value);
+		}
+	}
 
-        public void setMaxDeep(System.Int32 mw)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.Int32);
-            Type.GetMethod("setMaxDeep", AllFlags, null, sigs, null).Invoke(Inst, new object[] { mw });
-        }
+	public static object Instance => Type.GetProperty("Instance", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(null);
 
-        public void setMaxCal(System.Int32 mw)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.Int32);
-            Type.GetMethod("setMaxCal", AllFlags, null, sigs, null).Invoke(Inst, new object[] { mw });
-        }
+	public Ai(object inst)
+	{
+		Inst = inst;
+	}
 
-        public void setTwoTurnSimulation(System.Boolean stts, System.Int32 amount)
-        {
-            var sigs = new Type[2];
-            sigs[0] = typeof(System.Boolean);
-            sigs[1] = typeof(System.Int32);
-            Type.GetMethod("setTwoTurnSimulation", AllFlags, null, sigs, null).Invoke(Inst, new object[] { stts, amount });
-        }
+	public void setMaxWide(int mw)
+	{
+		Type[] types = new Type[1] { typeof(int) };
+		Type.GetMethod("setMaxWide", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { mw });
+	}
 
-        public void updateTwoTurnSim()
-        {
-            var sigs = new Type[0];
-            Type.GetMethod("updateTwoTurnSim", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public void setMaxDeep(int mw)
+	{
+		Type[] types = new Type[1] { typeof(int) };
+		Type.GetMethod("setMaxDeep", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { mw });
+	}
 
-        public void setPlayAround()
-        {
-            var sigs = new Type[0];
-            Type.GetMethod("setPlayAround", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public void setMaxCal(int mw)
+	{
+		Type[] types = new Type[1] { typeof(int) };
+		Type.GetMethod("setMaxCal", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { mw });
+	}
 
-        public void doallmoves(System.Boolean test, System.Boolean isLethalCheck)
-        {
-            var sigs = new Type[2];
-            sigs[0] = typeof(System.Boolean);
-            sigs[1] = typeof(System.Boolean);
-            Type.GetMethod("doallmoves", AllFlags, null, sigs, null).Invoke(Inst, new object[] { test, isLethalCheck });
-        }
+	public void setTwoTurnSimulation(bool stts, int amount)
+	{
+		Type[] types = new Type[2]
+		{
+			typeof(bool),
+			typeof(int)
+		};
+		Type.GetMethod("setTwoTurnSimulation", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[2] { stts, amount });
+	}
 
-        public void doNextCalcedMove()
-        {
-            var sigs = new Type[0];
-            Type.GetMethod("doNextCalcedMove", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public void updateTwoTurnSim()
+	{
+		Type[] types = new Type[0];
+		Type.GetMethod("updateTwoTurnSim", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
 
-        public void dosomethingclever(object bbase)
-        {
-            var sigs = new Type[1];
-            sigs[0] = Type.Assembly.GetType("HREngine.Bots.Behavior");
-            Type.GetMethod("dosomethingclever", AllFlags, null, sigs, null).Invoke(Inst, new object[] { bbase });
-        }
+	public void setPlayAround()
+	{
+		Type[] types = new Type[0];
+		Type.GetMethod("setPlayAround", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
 
-        public object autoTester(System.Boolean printstuff, string data, System.Int32 mode)
-        {
-            var sigs = new Type[3];
-            sigs[0] = typeof(System.Boolean);
-            sigs[1] = typeof(System.String);
-            sigs[2] = typeof(System.Int32);
-            return (object)Type.GetMethod("autoTester", AllFlags, null, sigs, null).Invoke(Inst, new object[] { printstuff, data, mode });
-        }
+	public void doallmoves(bool test, bool isLethalCheck)
+	{
+		Type[] types = new Type[2]
+		{
+			typeof(bool),
+			typeof(bool)
+		};
+		(Type.GetMethod("doAllMoves", BindingFlags.Instance | BindingFlags.Public) ?? Type.GetMethod("doallmoves", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null)).InvokeCompatible(Inst, new object[2] { test, isLethalCheck });
+	}
 
-        public void simmulateWholeTurn(object bt)
-        {
-            var sigs = new Type[1];
-            sigs[0] = Type.Assembly.GetType("HREngine.Bots.BoardTester");
-            Type.GetMethod("simmulateWholeTurn", AllFlags, null, sigs, null).Invoke(Inst, new object[] { bt });
-        }
+	public void doNextCalcedMove()
+	{
+		Type[] types = new Type[0];
+		Type.GetMethod("doNextCalcedMove", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
 
-        public void simmulateWholeTurnandPrint()
-        {
-            var sigs = new Type[0];
-            Type.GetMethod("simmulateWholeTurnandPrint", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public void dosomethingclever(object bbase)
+	{
+		Type[] types = new Type[1] { Type.Assembly.GetType("HREngine.Bots.Behavior") };
+		Type.GetMethod("dosomethingclever", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { bbase });
+	}
 
-        public void updateEntitiy(System.Int32 old, System.Int32 newone)
-        {
-            var sigs = new Type[2];
-            sigs[0] = typeof(System.Int32);
-            sigs[1] = typeof(System.Int32);
-            Type.GetMethod("updateEntitiy", AllFlags, null, sigs, null).Invoke(Inst, new object[] { old, newone });
-        }
+	public object autoTester(bool printstuff, string data, int mode)
+	{
+		Type[] types = new Type[3]
+		{
+			typeof(bool),
+			typeof(string),
+			typeof(int)
+		};
+		return Type.GetMethod("autoTester", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[3] { printstuff, data, mode });
+	}
 
-        public System.Boolean Equals(object obj)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.Object);
-            return (System.Boolean)Type.GetMethod("Equals", AllFlags, null, sigs, null).Invoke(Inst, new object[] { obj });
-        }
+	public void simmulateWholeTurn(object bt)
+	{
+		Type[] types = new Type[1] { Type.Assembly.GetType("HREngine.Bots.BoardTester") };
+		Type.GetMethod("simmulateWholeTurn", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { bt });
+	}
 
-        public System.Int32 GetHashCode()
-        {
-            var sigs = new Type[0];
-            return (System.Int32)Type.GetMethod("GetHashCode", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public void simmulateWholeTurnandPrint()
+	{
+		Type[] types = new Type[0];
+		Type.GetMethod("simmulateWholeTurnandPrint", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
 
-        public void Finalize()
-        {
-            var sigs = new Type[0];
-            Type.GetMethod("Finalize", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
-
-        public object GetType()
-        {
-            var sigs = new Type[0];
-            return (object)Type.GetMethod("GetType", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
-
-        public object MemberwiseClone()
-        {
-            var sigs = new Type[0];
-            return (object)Type.GetMethod("MemberwiseClone", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
-
-        public string ToString()
-        {
-            var sigs = new Type[0];
-            return (string)Type.GetMethod("ToString", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
-
-    }
+	public void updateEntitiy(int old, int newone)
+	{
+		Type[] types = new Type[2]
+		{
+			typeof(int),
+			typeof(int)
+		};
+		Type.GetMethod("updateEntitiy", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[2] { old, newone });
+	}
 }

@@ -1,150 +1,142 @@
-using System;
+﻿using System;
 using System.Reflection;
 
-namespace SilverfishWrapper
+namespace SilverfishWrapper;
+
+public class QuestItem
 {
-    public class QuestItem
-    {
-        public object Inst;
-        public static Type Type;
+	public object Inst;
 
-        public QuestItem(object inst)
-        {
-            this.Inst = inst;
-        }
-        const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
-        public object mobsTurn
-        {
-            get
-            {
-                return (object)Type.GetField("mobsTurn", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("mobsTurn", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public static Type Type;
 
-        public cardIDEnum Id
-        {
-            get
-            {
-                return (cardIDEnum)Type.GetField("Id", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("Id", AllFlags).SetValue(Inst, value);
-            }
-        }
+	private const BindingFlags AllFlags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
-        public System.Int32 questProgress
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("questProgress", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("questProgress", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public object mobsTurn
+	{
+		get
+		{
+			return Type.GetField("mobsTurn", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("mobsTurn", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public System.Int32 maxProgress
-        {
-            get
-            {
-                return (System.Int32)Type.GetField("maxProgress", AllFlags).GetValue(Inst);
-            }
-            set
-            {
-                Type.GetField("maxProgress", AllFlags).SetValue(Inst, value);
-            }
-        }
+	public cardIDEnum Id
+	{
+		get
+		{
+			return ReflectionHelper.ConvertValue<cardIDEnum>(Type.GetField("Id", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst));
+		}
+		set
+		{
+			Type.GetField("Id", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public void Copy(object q)
-        {
-            var sigs = new Type[1];
-            sigs[0] = Type.Assembly.GetType("HREngine.Bots.Questmanager+QuestItem");
-            Type.GetMethod("Copy", AllFlags, null, sigs, null).Invoke(Inst, new object[] { q });
-        }
+	public int questProgress
+	{
+		get
+		{
+			return (int)Type.GetField("questProgress", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("questProgress", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public void Reset()
-        {
-            var sigs = new Type[0];
-            Type.GetMethod("Reset", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public int maxProgress
+	{
+		get
+		{
+			return (int)Type.GetField("maxProgress", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("maxProgress", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public void trigger_MinionWasPlayed(object m)
-        {
-            var sigs = new Type[1];
-            sigs[0] = Type.Assembly.GetType("HREngine.Bots.Minion");
-            Type.GetMethod("trigger_MinionWasPlayed", AllFlags, null, sigs, null).Invoke(Inst, new object[] { m });
-        }
+	public object uniqueMinionTypesPlayed
+	{
+		get
+		{
+			return Type.GetField("uniqueMinionTypesPlayed", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("uniqueMinionTypesPlayed", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public void trigger_MinionWasSummoned(object m)
-        {
-            var sigs = new Type[1];
-            sigs[0] = Type.Assembly.GetType("HREngine.Bots.Minion");
-            Type.GetMethod("trigger_MinionWasSummoned", AllFlags, null, sigs, null).Invoke(Inst, new object[] { m });
-        }
+	public object questAttackValuesPlayed
+	{
+		get
+		{
+			return Type.GetField("questAttackValuesPlayed", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).GetValue(Inst);
+		}
+		set
+		{
+			Type.GetField("questAttackValuesPlayed", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).SetCompatibleValue(Inst, value);
+		}
+	}
 
-        public void trigger_SpellWasPlayed(object target, System.Int32 qId)
-        {
-            var sigs = new Type[2];
-            sigs[0] = Type.Assembly.GetType("HREngine.Bots.Minion");
-            sigs[1] = typeof(System.Int32);
-            Type.GetMethod("trigger_SpellWasPlayed", AllFlags, null, sigs, null).Invoke(Inst, new object[] { target, qId });
-        }
+	public QuestItem(object inst)
+	{
+		Inst = inst;
+	}
 
-        public void trigger_WasDiscard(System.Int32 num)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.Int32);
-            Type.GetMethod("trigger_WasDiscard", AllFlags, null, sigs, null).Invoke(Inst, new object[] { num });
-        }
+	public void Copy(object q)
+	{
+		Type[] types = new Type[1] { Type.Assembly.GetType("HREngine.Bots.Questmanager+QuestItem") };
+		Type.GetMethod("Copy", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { q });
+	}
 
-        public cardIDEnum Reward()
-        {
-            var sigs = new Type[0];
-            return (cardIDEnum)Type.GetMethod("Reward", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public void Reset()
+	{
+		Type[] types = new Type[0];
+		Type.GetMethod("Reset", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]);
+	}
 
-        public System.Boolean Equals(object obj)
-        {
-            var sigs = new Type[1];
-            sigs[0] = typeof(System.Object);
-            return (System.Boolean)Type.GetMethod("Equals", AllFlags, null, sigs, null).Invoke(Inst, new object[] { obj });
-        }
+	public static bool IsTrackableUniqueRace(Race race)
+	{
+		Type[] types = new Type[1] { Type.Assembly.GetType("HREngine.Bots.CardDB+Race") };
+		return (bool)Type.GetMethod("IsTrackableUniqueRace", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).Invoke(null, new object[1] { race });
+	}
 
-        public System.Int32 GetHashCode()
-        {
-            var sigs = new Type[0];
-            return (System.Int32)Type.GetMethod("GetHashCode", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public void trigger_MinionWasPlayed(object m)
+	{
+		Type[] types = new Type[1] { Type.Assembly.GetType("HREngine.Bots.Minion") };
+		Type.GetMethod("trigger_MinionWasPlayed", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { m });
+	}
 
-        public void Finalize()
-        {
-            var sigs = new Type[0];
-            Type.GetMethod("Finalize", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public void trigger_MinionWasSummoned(object m)
+	{
+		Type[] types = new Type[1] { Type.Assembly.GetType("HREngine.Bots.Minion") };
+		Type.GetMethod("trigger_MinionWasSummoned", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { m });
+	}
 
-        public object GetType()
-        {
-            var sigs = new Type[0];
-            return (object)Type.GetMethod("GetType", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public void trigger_SpellWasPlayed(object target, int qId)
+	{
+		Type[] types = new Type[2]
+		{
+			Type.Assembly.GetType("HREngine.Bots.Minion"),
+			typeof(int)
+		};
+		Type.GetMethod("trigger_SpellWasPlayed", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[2] { target, qId });
+	}
 
-        public object MemberwiseClone()
-        {
-            var sigs = new Type[0];
-            return (object)Type.GetMethod("MemberwiseClone", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
+	public void trigger_WasDiscard(int num)
+	{
+		Type[] types = new Type[1] { typeof(int) };
+		Type.GetMethod("trigger_WasDiscard", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[1] { num });
+	}
 
-        public string ToString()
-        {
-            var sigs = new Type[0];
-            return (string)Type.GetMethod("ToString", AllFlags, null, sigs, null).Invoke(Inst, new object[] { });
-        }
-
-    }
+	public cardIDEnum Reward()
+	{
+		Type[] types = new Type[0];
+		return ReflectionHelper.ConvertValue<cardIDEnum>(Type.GetMethod("Reward", BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, types, null).InvokeCompatible(Inst, new object[0]));
+	}
 }

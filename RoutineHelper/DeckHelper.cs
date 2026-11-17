@@ -1,148 +1,113 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using SilverfishWrapper;
 
-namespace RoutineHelper
+namespace RoutineHelper;
+
+public class DeckHelper
 {
-	internal static class VarInt
+	public static List<Card> Deserialize(string input)
 	{
-		public static byte[] GetBytes(ulong value)
+		List<Card> list = null;
+		IEnumerable<string> enumerable = from x in input.Split('\n')
+			select x.Trim();
+		string text = null;
+		string text2 = null;
+		foreach (string item in enumerable)
 		{
-			using (var ms = new MemoryStream())
+			if (string.IsNullOrEmpty(item))
 			{
-				while (value != 0)
+				continue;
+			}
+			if (item.StartsWith("#"))
+			{
+				if (item.StartsWith("###"))
 				{
-					var b = value & 0x7f;
-					value >>= 7;
-					if (value != 0)
-						b |= 0x80;
-					ms.WriteByte((byte)b);
+					text = item.Substring(3).Trim();
 				}
-				return ms.ToArray();
+				if (item.StartsWith("# Deck ID:"))
+				{
+					text2 = item.Substring(10).Trim();
+				}
+			}
+			else if (list == null)
+			{
+				list = DeserializeDeckString(item);
 			}
 		}
+		return list;
+	}
 
-		public static ulong ReadNext(byte[] bytes, out int length)
+	private static List<Card> DeserializeDeckString(string deckString)
+	{
+		List<Card> deck = new List<Card>();
+		byte[] bytes;
+		try
 		{
-			length = 0;
-			ulong result = 0;
-			foreach (var b in bytes)
+			bytes = Convert.FromBase64String(deckString);
+		}
+		catch (Exception innerException)
+		{
+			throw new ArgumentException("Input is not a valid deck string.", innerException);
+		}
+		int offset = 0;
+		offset++;
+		Read();
+		Read();
+		Read();
+		Read();
+		int num = (int)Read();
+		for (int i = 0; i < num; i++)
+		{
+			AddCard();
+		}
+		int num2 = (int)Read();
+		for (int j = 0; j < num2; j++)
+		{
+			AddCard(null, 2);
+		}
+		int num3 = (int)Read();
+		for (int k = 0; k < num3; k++)
+		{
+			int value = (int)Read();
+			int count = (int)Read();
+			AddCard(value, count);
+		}
+		return deck;
+		void AddCard(int? dbfId = null, int count2 = 1)
+		{
+			dbfId = dbfId ?? ((int)Read());
+			CardDB cardDB = new CardDB(CardDB.Instance);
+			Card item = new Card(cardDB.getCardDataFromDbfID(dbfId.ToString()))
 			{
-				var value = (ulong)b & 0x7f;
-				result |= value << length * 7;
-				if ((b & 0x80) != 0x80)
-					break;
-				length++;
+				count = count2
+			};
+			deck.Add(item);
+		}
+		ulong Read()
+		{
+			if (offset > bytes.Length)
+			{
+				throw new ArgumentException("Input is not a valid deck string.");
 			}
-			length++;
+			int length;
+			ulong result = VarInt.ReadNext(bytes.Skip(offset).ToArray(), out length);
+			offset += length;
 			return result;
 		}
-
 	}
-	public class DeckHelper
+
+	private static string TitleCase(string str)
 	{
-		/// <summary>
-		/// Deserializes a given deckstring into a deck object
-		/// </summary>
-		/// <exception cref="ArgumentException"></exception>
-		/// <param name="input">Deckstring to be deserialized</param>
-		/// <returns>Deserialized deck object</returns>
-		public static List<Card> Deserialize(string input)
+		if (string.IsNullOrEmpty(str))
 		{
-			List<Card> deck = null;
-			var lines = input.Split('\n').Select(x => x.Trim());
-			string deckName = null;
-			string deckId = null;
-			foreach (var line in lines)
-			{
-				if (string.IsNullOrEmpty(line))
-					continue;
-				if (line.StartsWith("#"))
-				{
-					if (line.StartsWith("###"))
-						deckName = line.Substring(3).Trim();
-					if (line.StartsWith("# Deck ID:"))
-						deckId = line.Substring(10).Trim();
-					continue;
-				}
-				if (deck == null)
-					deck = DeserializeDeckString(line);
-			}
-			return deck;
+			return string.Empty;
 		}
-
-		private static List<Card> DeserializeDeckString(string deckString)
+		if (str.Length == 1)
 		{
-			var deck = new List<Card>();
-			byte[] bytes;
-			try
-			{
-				bytes = Convert.FromBase64String(deckString);
-			}
-			catch (Exception e)
-			{
-				throw new ArgumentException("Input is not a valid deck string.", e);
-			}
-			var offset = 0;
-			ulong Read()
-			{
-				if (offset > bytes.Length)
-					throw new ArgumentException("Input is not a valid deck string.");
-				var value = VarInt.ReadNext(bytes.Skip(offset).ToArray(), out var length);
-				offset += length;
-				return value;
-			}
-
-			//Zero byte
-			offset++;
-
-			//Version - always 1
-			Read();
-
-			Read(); // Format Type
-
-			//Num Heroes - always 1
-			Read();
-
-			Read(); // Hero ID
-
-			void AddCard(int? dbfId = null, int count = 1)
-			{
-				dbfId = dbfId ?? (int)Read();
-				var cardDb = new CardDB(CardDB.Instance);
-				Card card = new Card(cardDb.getCardDataFromDbfID(dbfId.ToString()));
-				card.count = count;
-				deck.Add(card);
-			}
-
-			var numSingleCards = (int)Read();
-			for (var i = 0; i < numSingleCards; i++)
-				AddCard();
-
-			var numDoubleCards = (int)Read();
-			for (var i = 0; i < numDoubleCards; i++)
-				AddCard(count: 2);
-
-			var numMultiCards = (int)Read();
-			for (var i = 0; i < numMultiCards; i++)
-			{
-				var dbfId = (int)Read();
-				var count = (int)Read();
-				AddCard(dbfId, count);
-			}
-			return deck;
+			return str.ToUpperInvariant();
 		}
-
-		private static string TitleCase(string str)
-		{
-			if (string.IsNullOrEmpty(str))
-				return string.Empty;
-			if (str.Length == 1)
-				return str.ToUpperInvariant();
-			return str.Substring(0, 1).ToUpperInvariant() + str.Substring(1, str.Length - 1).ToLowerInvariant();
-		}
+		return str.Substring(0, 1).ToUpperInvariant() + str.Substring(1, str.Length - 1).ToLowerInvariant();
 	}
 }

@@ -1,241 +1,125 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
-namespace ReflectionCodeGenerator
+namespace ReflectionCodeGenerator;
+
+internal static class CodeGen
 {
-    static class CodeGen
+    private const BindingFlags Flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly;
+    private const string Header = "using System;\nusing System.Reflection;\nnamespace SilverfishWrapper;\n";
+    private static string Quote(string value) => JsonSerializer.Serialize(value);
+    private static bool Supported(Type type) => !type.IsByRef && !type.IsPointer && !type.ContainsGenericParameters;
+    private static bool Named(MemberInfo member) => !member.Name.Contains('<') && !member.Name.Contains('.');
+    private static string WrapperType(Type type) => type == typeof(void) ? "void" :
+        type.IsEnum ? "@" + type.Name :
+        type == typeof(string) || type.IsPrimitive || type == typeof(decimal) ? "global::" + type.FullName : "object";
+    private static string RuntimeType(Type type, Type declaringType)
     {
-        const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
-        const string FileTemplate = "using System;\r\nusing System.Reflection;\r\n\r\nnamespace SilverfishWrapper\r\n{\r\n%content%}\r\n";
-        public static string Generate(Type t)
-        {
-            var fieldsStr = ParseFields(t);
-            var propertiesStr = ParseProperties(t);
-            var methodsStr = ParseMethods(t);
-            var classBegin = $"public class {t.Name}\r\n{{\r\npublic object Inst;\r\npublic static Type Type;\r\n\r\npublic {t.Name}(object inst)\r\n{{\r\nthis.Inst = inst;\r\n}}\r\n";
-            classBegin += "const BindingFlags AllFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;\r\n";
-            var classEnd = "}\r\n";
-            return FileTemplate.Replace("%content%", classBegin + fieldsStr + propertiesStr + methodsStr + classEnd);
-        }
+        if (type.Assembly == declaringType.Assembly)
+            return "Type.Assembly.GetType(" + Quote(type.FullName) + ", true)";
+        if (type.IsGenericType)
+            return "System.Type.GetType(" + Quote(type.GetGenericTypeDefinition().AssemblyQualifiedName) + ", true).MakeGenericType(new Type[] { " +
+                string.Join(", ", type.GetGenericArguments().Select(argument => RuntimeType(argument, declaringType))) + " })";
+        return "System.Type.GetType(" + Quote(type.AssemblyQualifiedName) + ", true)";
+    }
 
-        static string ParseFields(Type t)
+    public static Dictionary<string, string> Generate(Type[] types)
+    {
+        var files = new Dictionary<string, string>();
+        var enums = new HashSet<Type>();
+        foreach (Type type in types)
         {
-            var fields = t.GetFields(AllFlags);
-            var result = "";
-            foreach (var field in fields)
+            var body = new StringBuilder(Header);
+            body.AppendLine($"public class @{type.Name}\n{{\n    public object Inst;\n    public static Type Type;\n    public @{type.Name}(object instance) {{ Inst = instance; }}");
+            body.AppendLine("    private const BindingFlags Flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly;");
+            foreach (var field in type.GetFields(Flags).Where(field => Named(field) && Supported(field.FieldType)))
             {
-                var name = field.FieldType.Name;
-                result += "public ";
-                if (field.IsStatic)
-                {
-                    result += "static ";
-                }
-                var typeName = "";
-                if (field.FieldType == typeof(string))
-                {
-                    typeName = "string";
-                }
-                else if (field.FieldType.IsValueType)
-                {
-                    if (field.FieldType.IsEnum)
-                        typeName = field.FieldType.Name;
-                    else if (field.FieldType.Assembly == t.Assembly)
-                        typeName = "object";
-                    else
-                        typeName = field.FieldType.Namespace + "." + field.FieldType.Name;
-                }
-                else
-                {
-                    typeName = "object";
-                }
-                result += $"{typeName} ";
-                result += field.Name;
-                result += "\r\n{\r\n";
-                if (field.IsStatic)
-                {
-                    result += $"get\r\n{{\r\nreturn ({typeName})Type.GetField(\"{field.Name}\", AllFlags).GetValue(null);\r\n}}\r\n";
-                    result += $"set\r\n{{\r\nType.GetField(\"{field.Name}\", AllFlags).SetValue(null, value);\r\n}}\r\n";
-                }
-                else
-                {
-                    result += $"get\r\n{{\r\nreturn ({typeName})Type.GetField(\"{field.Name}\", AllFlags).GetValue(Inst);\r\n}}\r\n";
-                    result += $"set\r\n{{\r\nType.GetField(\"{field.Name}\", AllFlags).SetValue(Inst, value);\r\n}}\r\n";
-                }
-                result += "}\r\n\r\n";
+                RememberEnum(field.FieldType, enums);
+                string target = field.IsStatic ? "null" : "Inst";
+                string member = $"Type.GetField({Quote(field.Name)}, Flags)";
+                body.AppendLine($"    public {(field.IsStatic ? "static " : "")}{WrapperType(field.FieldType)} @{field.Name}\n    {{");
+                body.AppendLine($"        get => ReflectionHelper.ConvertValue<{WrapperType(field.FieldType)}>({member}.GetValue({target}));");
+                if (!field.IsInitOnly && !field.IsLiteral)
+                    body.AppendLine($"        set => {member}.SetCompatibleValue({target}, value);");
+                body.AppendLine("    }");
             }
-            return result;
-        }
-
-        static string ParseProperties(Type t)
-        {
-            var properties = t.GetProperties(AllFlags);
-            var result = "";
-            foreach (var property in properties)
+            foreach (var property in type.GetProperties(Flags).Where(property => Named(property) && property.GetIndexParameters().Length == 0 && Supported(property.PropertyType)))
             {
-                var name = property.PropertyType.Name;
-                var get = property.GetGetMethod(true);
-                var set = property.GetSetMethod(true);
-                var isStatic = get != null ? get.IsStatic : set != null ? set.IsStatic : false;
-                result += "public ";
-                if (isStatic)
-                {
-                    result += "static ";
-                }
-                var typeName = "";
-                if (property.PropertyType == typeof(string))
-                {
-                    typeName = "string";
-                }
-                else if (property.PropertyType.IsValueType)
-                {
-                    if (property.PropertyType.IsEnum)
-                        typeName = property.PropertyType.Name;
-                    else if (property.PropertyType.Assembly == t.Assembly)
-                        typeName = "object";
-                    else
-                        typeName = property.PropertyType.Namespace + "." + property.PropertyType.Name;
-                }
-                else
-                {
-                    typeName = "object";
-                }
-                result += $"{typeName} ";
-                result += property.Name;
-                result += "\r\n{\r\n";
-                if (isStatic)
-                {
-                    if (get != null)
-                        result += $"get\r\n{{\r\nreturn ({typeName})Type.GetProperty(\"{property.Name}\", AllFlags).GetValue(null);\r\n}}\r\n";
-                    if (set != null)
-                        result += $"set\r\n{{\r\nType.GetProperty(\"{property.Name}\", AllFlags).SetValue(null, value);\r\n}}\r\n";
-                }
-                else
-                {
-                    result += $"get\r\n{{\r\nreturn ({typeName})Type.GetProperty(\"{property.Name}\", AllFlags).GetValue(Inst);\r\n}}\r\n";
-                    result += $"set\r\n{{\r\nType.GetProperty(\"{property.Name}\", AllFlags).SetValue(Inst, value);\r\n}}\r\n";
-                }
-                result += "}\r\n\r\n";
+                RememberEnum(property.PropertyType, enums);
+                bool isStatic = (property.GetGetMethod(true) ?? property.GetSetMethod(true)).IsStatic;
+                string target = isStatic ? "null" : "Inst";
+                string member = $"Type.GetProperty({Quote(property.Name)}, Flags)";
+                body.AppendLine($"    public {(isStatic ? "static " : "")}{WrapperType(property.PropertyType)} @{property.Name}\n    {{");
+                if (property.CanRead)
+                    body.AppendLine($"        get => ReflectionHelper.ConvertValue<{WrapperType(property.PropertyType)}>({member}.GetValue({target}));");
+                if (property.CanWrite)
+                    body.AppendLine($"        set => {member}.SetCompatibleValue({target}, value);");
+                body.AppendLine("    }");
             }
-            return result;
-        }
-
-        static string ParseMethods(Type t)
-        {
-            var methods = t.GetMethods(AllFlags);
-            var result = "";
+            var signatures = new HashSet<string>();
+            var methods = type.GetMethods(Flags)
+                .Where(method => Named(method) && !method.IsGenericMethod && !method.IsSpecialName
+                    && Supported(method.ReturnType) && method.GetParameters().All(parameter => Supported(parameter.ParameterType)))
+                .OrderBy(method => method.Name, StringComparer.Ordinal)
+                .ThenByDescending(method => method.GetBaseDefinition().DeclaringType == typeof(object))
+                .ThenByDescending(method => method.GetParameters().Any(parameter => parameter.ParameterType == typeof(object)))
+                .ThenBy(method => string.Join(",", method.GetParameters().Select(parameter => parameter.ParameterType.FullName)), StringComparer.Ordinal);
             foreach (var method in methods)
             {
-                //泛型方法实现太麻烦，需要再说
-                if (method.IsGenericMethod || method.IsSpecialName)
-                    continue;
-                var name = method.Name;
-                var retType = method.ReturnType;
-                var paras = method.GetParameters();
-                var isGeneric = false;
-                foreach (var param in paras)
+                var parameters = method.GetParameters();
+                string parameterSignature = "(" + string.Join(",", parameters.Select(parameter => WrapperType(parameter.ParameterType))) + ")";
+                string wrapperName = method.Name;
+                if (!signatures.Add(wrapperName + parameterSignature))
                 {
-                    if (param.ParameterType.IsGenericType)
-                    {
-                        isGeneric = true;
-                        break;
-                    }    
+                    string suffix = "__" + string.Join("_", parameters.Select(parameter =>
+                        Regex.Replace(parameter.ParameterType.Name, "[^a-zA-Z0-9_]", "_")));
+                    wrapperName = method.Name + suffix;
+                    int sequence = 2;
+                    while (!signatures.Add(wrapperName + parameterSignature))
+                        wrapperName = method.Name + suffix + "_" + sequence++;
+                    Console.Error.WriteLine($"Renamed wrapper overload: {type.FullName}.{method.Name}{parameterSignature} -> {wrapperName}");
                 }
-                if (isGeneric)
-                    continue;
-                result += "public ";
-                if (method.IsStatic)
-                {
-                    result += "static ";
-                }
-                var retTypeName = "";
-                if (retType == typeof(void))
-                {
-                    retTypeName = "void";
-                }
-                else if (retType == typeof(string))
-                {
-                    retTypeName = "string";
-                }
-                else if (retType.IsValueType)
-                {
-                    if (retType.IsEnum)
-                        retTypeName = retType.Name;
-                    else if (retType.Assembly == t.Assembly)
-                        retTypeName = "object";
-                    else
-                        retTypeName = retType.Namespace + "." + retType.Name;
-                }
-                else
-                {
-                    retTypeName = "object";
-                }
-                result += $"{retTypeName} {method.Name}(";
-                if (paras.Length > 0)
-                {
-                    result += string.Join(", ", paras.Select(param =>
-                    {
-                        var typeName = "";
-                        if (param.ParameterType == typeof(string))
-                        {
-                            typeName = "string";
-                        }
-                        else if (param.ParameterType.IsValueType)
-                        {
-                            if (param.ParameterType.IsEnum)
-                                typeName = param.ParameterType.Name;
-                            else if (param.ParameterType.Assembly == t.Assembly)
-                                typeName = "object";
-                            else
-                                typeName = param.ParameterType.Namespace + "." + param.ParameterType.Name;
-                        }
-                        else
-                        {
-                            typeName = "object";
-                        }
-                        return $"{typeName} {param.Name}";
-                    }));
-                }
-
-                result += ")\r\n{\r\n";
-                result += $"var sigs = new Type[{paras.Length}];\r\n";
-                if (paras.Length > 0)
-                {
-                    for (int i = 0; i < paras.Length; i++)
-                    {
-                        var param = paras[i];
-                        if (param.ParameterType.Assembly == t.Assembly)
-                        {
-                            result += $"sigs[{i}] = Type.Assembly.GetType(\"{paras[i].ParameterType.FullName}\");\r\n";
-                        }
-                        else
-                            result += $"sigs[{i}] = typeof({paras[i].ParameterType.FullName});\r\n";
-                    }
-                }
-                if (method.IsStatic)
-                {
-                    if (retTypeName == "void")
-                        result += $"Type.GetMethod(\"{method.Name}\", AllFlags, null, sigs, null).Invoke(null, new object[] {{ ";
-                    else
-                        result += $"return ({retTypeName})Type.GetMethod(\"{method.Name}\", AllFlags, null, sigs, null).Invoke(null, new object[] {{ ";
-                }
-                else
-                {
-                    if (retTypeName == "void")
-                        result += $"Type.GetMethod(\"{method.Name}\", AllFlags, null, sigs, null).Invoke(Inst, new object[] {{ ";
-                    else
-                        result += $"return ({retTypeName})Type.GetMethod(\"{method.Name}\", AllFlags, null, sigs, null).Invoke(Inst, new object[] {{ ";
-                }
-                if (paras.Length > 0)
-                {
-                    result += string.Join(", ", paras.Select(param => param.Name));
-                }
-                result += " });\r\n}\r\n\r\n";
+                RememberEnum(method.ReturnType, enums);
+                foreach (var parameter in parameters) RememberEnum(parameter.ParameterType, enums);
+                string declarations = string.Join(", ", parameters.Select((parameter, index) => WrapperType(parameter.ParameterType) + " arg" + index));
+                string arguments = string.Join(", ", parameters.Select((_, index) => "arg" + index));
+                string signatureTypes = string.Join(", ", parameters.Select(parameter => RuntimeType(parameter.ParameterType, type)));
+                string target = method.IsStatic ? "null" : "Inst";
+                string call = $"Type.GetMethod({Quote(method.Name)}, Flags, null, new Type[] {{ {signatureTypes} }}, null).InvokeCompatible({target}, new object[] {{ {arguments} }})";
+                string modifier = method.IsStatic ? "static " :
+                    method.IsVirtual && method.GetBaseDefinition().DeclaringType == typeof(object) && wrapperName == method.Name ? "override " : "";
+                body.AppendLine($"    public {modifier}{WrapperType(method.ReturnType)} @{wrapperName}({declarations})");
+                body.AppendLine(method.ReturnType == typeof(void)
+                    ? $"        => {call};" : $"        => ReflectionHelper.ConvertValue<{WrapperType(method.ReturnType)}>({call});");
             }
-            return result;
+            body.AppendLine("}");
+            files.Add(type.Name + ".cs", body.ToString());
         }
+        foreach (var group in enums.GroupBy(type => type.Name))
+        {
+            if (group.Count() != 1) throw new InvalidOperationException("Conflicting enum name: " + group.Key);
+            Type type = group.Single();
+            var body = new StringBuilder(Header);
+            body.AppendLine($"public enum @{type.Name} : {WrapperType(Enum.GetUnderlyingType(type))}\n{{");
+            foreach (string name in Enum.GetNames(type))
+            {
+                object value = Convert.ChangeType(Enum.Parse(type, name), Enum.GetUnderlyingType(type), CultureInfo.InvariantCulture);
+                body.AppendLine($"    @{name} = {Convert.ToString(value, CultureInfo.InvariantCulture)},");
+            }
+            body.AppendLine("}");
+            files.Add(type.Name + ".cs", body.ToString());
+        }
+        return files;
+    }
+
+    private static void RememberEnum(Type type, HashSet<Type> enums)
+    {
+        if (type.IsEnum) enums.Add(type);
     }
 }

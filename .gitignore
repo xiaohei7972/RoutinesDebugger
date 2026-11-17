@@ -356,3 +356,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Local debugger state
+**/CompiledAssemblies/
+**/Settings/
+**/_tempbuild/
+/myLog.txt

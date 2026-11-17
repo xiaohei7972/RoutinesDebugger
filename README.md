@@ -1,41 +1,75 @@
 # HearthBuddyRoutinesDebugger
 
-#### 介绍
-【炉石兄弟策略调试软件】源码，学习C#，不可用于商业用途和非法牟利
+〖炉石兄弟策略调试软件〗源码，学习 C#，不可用于商业用途和非法牟利。
 
- **请按照以下相关内容调整代码**
+## 当前兼容版本
 
-> 1. 请在本项目的CompilerWindow.xaml.cs文件中自行添加以下相关代码
->
-> ![代码修改](https://raw.githubusercontent.com/kanshufan-1107/RoutinesDebugger/refs/heads/main/image/%E4%BB%A3%E7%A0%81%E4%BF%AE%E6%94%B9.png)
->
-> 2. 根据`HB相关调整示例`文件夹下的相关文件, 调整相关代码
->
-> + Ai.cs
->   + 搜索`APPLICATION_MODE`字符串找到对应的修改代码
->
-> + MiniSimulator.cs
->   + 搜索`APPLICATION_MODE`字符串找到对应的修改代码
->
->   ![image-20250404191717166](https://raw.githubusercontent.com/kanshufan-1107/HearthBuddyRoutinesDebugger/refs/heads/main/image/%E4%BB%A3%E7%A0%81%E4%BF%AE%E6%94%B9-3.png)
->   
-> + CardDB.cs
->
->   + 新增以下相关代码
->
->   ![修改代码-9](https://raw.githubusercontent.com/kanshufan-1107/HearthBuddyRoutinesDebugger/refs/heads/main/image/%E4%BB%A3%E7%A0%81%E4%BF%AE%E6%94%B9-9.png)
->
->   ![image-20250404190457076](https://raw.githubusercontent.com/kanshufan-1107/HearthBuddyRoutinesDebugger/refs/heads/main/image/%E4%BB%A3%E7%A0%81%E4%BF%AE%E6%94%B9-1.png)
->
-> + Minion.cs
->
->   + 新增以下相关代码
->
->   ![image-20250404190718395](https://raw.githubusercontent.com/kanshufan-1107/RoutinesDebugger/refs/heads/main/image/%E4%BB%A3%E7%A0%81%E4%BF%AE%E6%94%B9-2.png)
+RoutineHelper 与反射生成工具支持 Windows x64、.NET 8，以及安装目录中使用 Hearthbuddy.dll、lib 和 Routines/DefaultRoutine/Silverfish 的炉石兄弟版本。使用当前安装中的策略源码和卡牌数据进行离线调试。
 
-以下是软件测试某一回合的截图
+本次适配基于所提供的 HB1.7.1 发布目录与 Hearthbuddy_Refactor 源码。历史 .NET Framework 4.7.2、x86 程序集需要使用对应历史版本的调试器。
 
-![策略调试](https://raw.githubusercontent.com/kanshufan-1107/HearthBuddyRoutinesDebugger/refs/heads/main/image/%E7%AD%96%E7%95%A5%E8%B0%83%E8%AF%95-1.png)
+## 使用发布包
 
-![策略调试](https://raw.githubusercontent.com/kanshufan-1107/HearthBuddyRoutinesDebugger/refs/heads/main/image/%E7%AD%96%E7%95%A5%E8%B0%83%E8%AF%95-2.png)
+1. 安装 .NET 8 Desktop Runtime x64，将发布包完整解压到可写目录。
+2. 打开 RoutineHelper.exe，首次启动会显示策略编译与配置窗口。
+3. 选择炉石兄弟安装中的 DefaultRoutine 或 Silverfish 目录，点击“编译并加载”。窗口显示编译进度和诊断，失败后可以修正源码并重试。
+4. 在主窗口选择策略与局面记录，执行测试并查看评分、动作和局面。卡牌查询支持输入关键字后按回车。
 
+后续启动自动加载已编译策略。旧版界面耦合缓存或损坏缓存会引导重新编译。修改策略或切换目录时，点击主窗口的“编译”按钮，成功后自动加载新程序集。
+
+配置读写按文件路径串行执行，并以原子替换方式保存。配置保存在程序旁的 Settings/Default/routine.xml，沿用 RoutinePath、SilverfishPath、LastRoutine 和 LastTestFile。程序也支持 HB_DEFAULTROUTINE_PATH、HB_SILVERFISH_PATH、ROUTINEHELPER_DEFAULTROUTINE_PATH 环境变量，已有有效配置优先使用。与炉石兄弟放在相邻层级时可自动发现策略目录。
+
+运行依赖从选定安装目录及其 lib 中读取。主程序集须为可加载的 Hearthbuddy.dll。缺失依赖时，请核对完整安装目录和错误信息中的文件路径。
+
+## 命令行
+
+在发布包目录中执行。相对输入路径以命令启动目录为基准。
+
+```powershell
+./RoutineHelper.exe --help
+./RoutineHelper.exe --compile 'D:/炉石兄弟/Routines/DefaultRoutine'
+./RoutineHelper.exe --run-test 'D:/炉石兄弟/Logs/Data/对局记录/牌面.txt' '丨通用丨不设惩罚'
+./RoutineHelper.exe --run-latest-test '丨通用丨不设惩罚'
+./ReflectionCodeGenerator.exe './CompiledAssemblies/Silverfish.dll' './GeneratedWrappers'
+```
+
+命令行重定向输出或等待退出时，也可以使用 dotnet RoutineHelper.dll 加相同参数。编译成功会保存策略目录配置。回放省略策略名称时采用已保存选择，再回退到首个可用策略。参数数量或路径无效时返回退出码 2。最近局面跨当前与历史日志目录按修改时间排序，外部导入文件会保留在当前选择中。
+
+RoutineHelper 退出码为 0 成功，1 编译或运行失败，2 参数或路径无效，3 未找到策略，4 策略类型缺失。生成器退出码为 0 成功，1 加载或生成失败，2 参数数量错误。
+
+编译结果保存在 CompiledAssemblies/Silverfish.dll，包含嵌入式调试符号。编译日志为 compile_attempt.log，命令行回放记录为 cli_test.log，算法日志位于 Logs。回放结果、详细日志和提示词保存在调试器的 Outputs/Replay 目录，按输入路径分组。编译失败保留上次成功程序集，同一路径上的并发编译会串行执行。
+
+ReflectionCodeGenerator 读取指定策略程序集并生成包装类、所需枚举及 ReflectionHelper.cs。先配置策略目录，或设置 HB_DEFAULTROUTINE_PATH，以便解析炉石兄弟依赖。生成器会报告缺失类型。映射后的方法签名冲突时，保留原始入口，并为其他重载追加参数类型后缀，例如 Choose__Uri。Equals、GetHashCode 等覆写保留对应行为。枚举通过名称转换。
+
+旧局面记录中的省略字段会在输入阶段转换。缺少随从卡牌 ID 的历史格式通过当前 CardDB 的中文名称映射恢复，采用卡牌数据库的默认版本。历史日志缺失的变体信息会影响回放精度。优先使用包含卡牌 ID 的完整记录或 ENTITY_SNAPSHOT。
+
+## 从源码构建
+
+需要 Windows x64 和 .NET 8 SDK。开发依赖通过 NuGet 恢复。
+
+```powershell
+dotnet build RoutinesDebugger.sln -c Release
+dotnet run --project tests/EditorSmoke -c Release
+./scripts/publish.ps1
+```
+
+发布脚本生成 artifacts/RoutinesDebugger-win-x64 和同名 ZIP。输出目录需为新目录，也可使用 -OutputDirectory 指定其他位置。发布包包含 RoutineHelper、反射生成工具及开发依赖，语言资源仅保留简体中文（zh-Hans），运行时读取所选炉石兄弟安装。
+
+完整策略检查使用实际安装路径执行 --compile，再执行局面回放。现有完整策略编译后，还可以运行以下检查。
+
+```powershell
+dotnet run --project tests/EditorSmoke -c Release -- './artifacts/RoutinesDebugger-win-x64' 'D:/炉石兄弟'
+dotnet run --project tests/UiSmoke -c Release -- './artifacts/RoutinesDebugger-win-x64' 'D:/炉石兄弟' 'D:/牌面.txt' -1893
+```
+
+UiSmoke 使用“丨通用丨不设惩罚”策略，最后一个参数为同一局面的 CLI 预期分数，所选局面须产生至少两个动作并包含敌方随从。检查覆盖 XAML 加载、界面回放、评分一致性、完整动作展示、卡牌查询、首次启动内置编译和输出目录隔离。它会打开并关闭测试窗口，在测试输出目录保存配置。
+
+Windows CI 构建应用和测试程序，运行合成程序集回归检查并提供 ZIP 构建产物。本地完整验证还需要炉石兄弟安装、策略源码和对局记录。
+
+## 实现说明
+
+RoutineHelper 内置 Roslyn 编译服务、安装目录解析和策略重载。编译使用只读源文件和内存语法树，离线策略关闭 APPLICATION_MODE，通过评分、动作和局面数据更新界面。离线 TestBase 兼容入口接入当前 BoardTester。编译引用限定在 .NET 框架和所选炉石兄弟依赖中。
+
+配置、编译缓存和测试产物保存在调试器目录。策略源文件、卡牌数据和输入局面作为只读输入使用。MainWindow 与 CompilerWindow 均由可编辑 XAML 构建。缺少的可选内核状态显示为“内核未提供”，超级风怒、攻击力和圣盾别名映射到当前字段。
+
+HB相关调整示例保留历史资料，当前调试入口通过内部编译适配与数据读取完成。
