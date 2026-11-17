@@ -27,7 +27,7 @@
                     </Grid.RowDefinitions>
                     <Grid x:Name="SelectionLayout" Grid.Row="0" Margin="2">
                         <ComboBox x:Name="RoutineComboBox" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Top" VerticalContentAlignment="Center" Margin="0, 0, 35, 0" ToolTipService.ToolTip="可供使用的策略." Height="{Binding ElementName=SelectionLayout, Path=ActualHeight}" SelectionChanged="RoutineComboBox_SelectionChanged" />
-                        <Button x:Name="RoutineSelectionButton" IsEnabled="False" Content="♻" HorizontalAlignment="Right" Margin="0" VerticalAlignment="Center" ToolTipService.ToolTip="重新编译AI." Width="{Binding ElementName=SelectionLayout, Path=ActualHeight}" Height="{Binding ElementName=SelectionLayout, Path=ActualHeight}" Click="RoutineSelectionButton_Click" />
+                        <Button x:Name="RoutineSelectionButton" IsEnabled="False" Content="编译" HorizontalAlignment="Right" Margin="0" VerticalAlignment="Center" ToolTipService.ToolTip="选择策略目录并重新编译" Width="{Binding ElementName=SelectionLayout, Path=ActualHeight}" Height="{Binding ElementName=SelectionLayout, Path=ActualHeight}" Click="RoutineSelectionButton_Click" />
                     </Grid>
                     <Grid x:Name="RecentTestLayout" Grid.Row="1" Margin="2">
                         <ComboBox x:Name="RecentTestFilesComboBox" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Top" VerticalContentAlignment="Center" Margin="0, 0, 35, 0" ToolTipService.ToolTip="最近测试过的牌面文件." Height="{Binding ElementName=SelectionLayout, Path=ActualHeight}" SelectionChanged="RecentTestFilesComboBox_SelectionChanged" />

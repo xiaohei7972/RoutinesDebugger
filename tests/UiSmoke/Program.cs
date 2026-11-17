@@ -1,5 +1,5 @@
 using System.IO;
-using System.Diagnostics;
+
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Windows;
@@ -14,11 +14,17 @@ internal static class Program
     public static int Main(string[] args)
     {
         string editorDirectory = Path.GetFullPath(args[0]);
+        Require(File.Exists(Path.Combine(editorDirectory, "RoutineHelper.exe"))
+            && !File.Exists(Path.Combine(editorDirectory, "RoutineCompiler.exe")), "Package uses a single compilation and debugging entry point");
         string runtimeDirectory = Path.GetFullPath(args[1]);
         string record = Path.GetFullPath(args[2]);
-        string testRecord = Path.Combine(AppContext.BaseDirectory, "smoke-input.txt");
+        string inputDirectory = Path.Combine(AppContext.BaseDirectory, "Inputs", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(inputDirectory);
+        string testRecord = Path.Combine(inputDirectory, "smoke-input.txt");
         File.Copy(record, testRecord, true);
         record = testRecord;
+        byte[] inputBytes = File.ReadAllBytes(record);
+        string[] originalInputFiles = Directory.GetFiles(inputDirectory);
         Environment.SetEnvironmentVariable("HB_DEFAULTROUTINE_PATH", Path.Combine(runtimeDirectory, "Routines", "DefaultRoutine"));
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
         AssemblyLoadContext.Default.Resolving += (_, name) =>
@@ -27,7 +33,7 @@ internal static class Program
             return path == null ? null : AssemblyLoadContext.Default.LoadFromAssemblyPath(path);
         };
         Directory.CreateDirectory(Path.Combine(AppContext.BaseDirectory, "CompiledAssemblies"));
-        File.Copy(Path.Combine(editorDirectory, "CompiledAssemblies", "Silverfish.dll"), RoutineRuntime.GetCompiledAssemblyPath(), true);
+        File.Delete(RoutineRuntime.GetCompiledAssemblyPath());
         var config = new XmlConfigUtil(RoutineRuntime.RoutineXmlPath);
         config.Write(Path.Combine(runtimeDirectory, "Routines", "DefaultRoutine"), "RoutinePath");
         var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
@@ -36,9 +42,68 @@ internal static class Program
         var compilerDialog = new CompilerWindow("Smoke");
         Require(compilerDialog.FindName("SilverfishPathTextBox") is TextBox, "Compiler XAML loads");
         compilerDialog.Close();
-        var compiler = new RoutineCompiler.MainWindow();
-        Require(compiler.FindName("LaunchButton") is Button, "Standalone compiler XAML loads");
-        compiler.Close();
+        string failureRoot = Path.Combine(AppContext.BaseDirectory, "CompileFailure");
+        string failureSource = Path.Combine(failureRoot, "Routines", "DefaultRoutine", "Silverfish");
+        Directory.CreateDirectory(Path.Combine(failureSource, "ai"));
+        Directory.CreateDirectory(Path.Combine(failureSource, "cards"));
+        Directory.CreateDirectory(Path.Combine(failureSource, "Test"));
+        File.Copy(Path.Combine(runtimeDirectory, "Hearthbuddy.dll"), Path.Combine(failureRoot, "Hearthbuddy.dll"), true);
+        File.WriteAllText(Path.Combine(failureSource, "..", "silverfish_HB.cs"), "broken source");
+        File.WriteAllText(Path.Combine(failureSource, "Test", "TestBase.cs"), "namespace HREngine.Bots { public class TestBase {} }");
+        var failureDialog = new CompilerWindow("Failure smoke");
+        ((TextBox)failureDialog.FindName("SilverfishPathTextBox")).Text = failureSource;
+        string originalRoutinePath = config.Read("RoutinePath");
+        var failureTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+        bool failureStarted = false;
+        failureTimer.Tick += (_, _) =>
+        {
+            var button = (Button)failureDialog.FindName("CompileButton");
+            if (!failureStarted)
+            {
+                failureStarted = true;
+                button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            }
+            else if (button.IsEnabled && failureDialog.Results != null)
+            {
+                failureTimer.Stop();
+                Require(failureDialog.Results.Errors.HasErrors && failureDialog.IsVisible
+                    && !string.IsNullOrWhiteSpace(((TextBox)failureDialog.FindName("DiagnosticsTextBox")).Text),
+                    "Failed integrated compilation displays diagnostics and permits retry");
+                Require(config.Read("RoutinePath") == originalRoutinePath, "Failed integrated compilation preserves configured source path");
+                failureDialog.Close();
+            }
+        };
+        failureTimer.Start();
+        failureDialog.ShowDialog();
+        bool compilationStarted = false;
+        int responsiveTicks = 0;
+        var compilationTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+        DateTime compilationDeadline = DateTime.UtcNow.AddMinutes(3);
+        compilationTimer.Tick += (_, _) =>
+        {
+            var dialog = application.Windows.OfType<CompilerWindow>().FirstOrDefault(window => window.IsVisible);
+            if (dialog == null) return;
+            if (DateTime.UtcNow > compilationDeadline)
+            {
+                Console.Error.WriteLine("Integrated compilation timed out");
+                application.Shutdown(1);
+                return;
+            }
+            var button = (Button)dialog.FindName("CompileButton");
+            if (!compilationStarted)
+            {
+                ((TextBox)dialog.FindName("SilverfishPathTextBox")).Text = Path.Combine(runtimeDirectory, "Routines", "DefaultRoutine");
+                compilationStarted = true;
+                button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            }
+            else if (!button.IsEnabled) responsiveTicks++;
+            else if (dialog.Results?.Errors.HasErrors == true)
+            {
+                Console.Error.WriteLine(((TextBox)dialog.FindName("DiagnosticsTextBox")).Text);
+                dialog.Close();
+                application.Shutdown(1);
+            }
+        };
         var window = new MainWindow { ShowInTaskbar = false };
         application.MainWindow = window;
         var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
@@ -79,24 +144,16 @@ internal static class Program
                 DateTime searchDeadline = DateTime.UtcNow.AddSeconds(10);
                 while (window.searchWorker?.IsBusy == true && DateTime.UtcNow < searchDeadline) await Task.Delay(50);
                 Require(((ListBox)window.FindName("CardListBox")).Items.Count > 0, "Card search returns matches");
-                int[] existingProcesses = Process.GetProcessesByName("RoutineHelper").Select(process => process.Id).ToArray();
-                ((Button)compiler.FindName("LaunchButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                await Task.Delay(500);
-                using var launched = Process.GetProcessesByName("RoutineHelper").FirstOrDefault(process => !existingProcesses.Contains(process.Id));
-                Require(launched != null && !launched.HasExited, "Standalone compiler launches editor");
-                try
-                {
-                    launched.WaitForInputIdle(10000);
-                    Require(!launched.HasExited, "Launched editor remains running");
-                }
-                finally
-                {
-                    if (!launched.HasExited)
-                    {
-                        launched.CloseMainWindow();
-                        if (!launched.WaitForExit(10000)) launched.Kill();
-                    }
-                }
+                Require(File.Exists(RoutineRuntime.GetCompiledAssemblyPath()) && compilationStarted && responsiveTicks > 0,
+                    "First startup compiles inside RoutineHelper with a responsive UI");
+                var artifacts = typeof(MainWindow).GetField("_lastAiFixArtifacts", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(window);
+                string promptPath = artifacts.GetType().GetProperty("PromptPath").GetValue(artifacts).ToString();
+                Require(promptPath.StartsWith(Path.Combine(AppContext.BaseDirectory, "Outputs") + Path.DirectorySeparatorChar)
+                    && File.Exists(promptPath), "Replay artifacts stay inside debugger output directory");
+                Require(File.ReadAllBytes(record).SequenceEqual(inputBytes)
+                    && Directory.GetFiles(inputDirectory).SequenceEqual(originalInputFiles), "Replay keeps the imported input directory unchanged");
+                Require(!MainWindow.compiledRoutines.GetReferencedAssemblies().Any(name => name.Name == "RoutineHelper"),
+                    "Offline kernel has no editor assembly dependency");
                 result = 0;
                 window.Close();
                 application.Shutdown();
@@ -104,7 +161,10 @@ internal static class Program
             catch (Exception exception) { timer.Stop(); Console.Error.WriteLine(exception); Console.Error.WriteLine(new System.Windows.Documents.TextRange(((RichTextBox)window.FindName("LogRichTextBox")).Document.ContentStart, ((RichTextBox)window.FindName("LogRichTextBox")).Document.ContentEnd).Text); window.Close(); application.Shutdown(1); }
         };
         Console.WriteLine("Opening editor window");
+        compilationTimer.Start();
         window.Show();
+        compilationTimer.Stop();
+        deadline = DateTime.UtcNow.AddMinutes(2);
         Console.WriteLine("Editor window opened");
         timer.Start();
         application.Run();

@@ -49,7 +49,7 @@ public static class SilverfishBuildService
 			File.WriteAllText(text4, BuildCompatStubs(fullPath), Encoding.UTF8);
 			List<string> list = BuildSourceFileList(fullPath, text4);
 			List<MetadataReference> list2 = BuildMetadataReferences(text2, logPath);
-			CSharpParseOptions options = new CSharpParseOptions(LanguageVersion.Preview, DocumentationMode.Parse, SourceCodeKind.Regular, new string[1] { "APPLICATION_MODE" });
+			CSharpParseOptions options = new CSharpParseOptions(LanguageVersion.Preview, DocumentationMode.Parse, SourceCodeKind.Regular);
 			List<SyntaxTree> list3 = new List<SyntaxTree>(list.Count);
 			foreach (string item in list)
 			{
@@ -199,7 +199,7 @@ public static class SilverfishBuildService
 	{
 		List<MetadataReference> list = new List<MetadataReference>();
 		HashSet<string> seenPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-		foreach (string item in EnumerateFrameworkReferencePaths().Concat(RuntimeDependencies.GetReferencePaths(runtimeDir)).Append(typeof(SilverfishBuildService).Assembly.Location))
+		foreach (string item in EnumerateFrameworkReferencePaths().Concat(RuntimeDependencies.GetReferencePaths(runtimeDir)))
 		{
 			TryAddMetadataReference(list, seenPaths, item, logPath);
 		}
@@ -209,8 +209,12 @@ public static class SilverfishBuildService
     private static IEnumerable<string> EnumerateFrameworkReferencePaths()
     {
         // Use the running .NET runtime and WPF assemblies, including type-forwarding facades.
+        string runtimeDirectory = Path.GetDirectoryName(typeof(object).Assembly.Location);
+        string desktopDirectory = Path.GetDirectoryName(typeof(System.Windows.Window).Assembly.Location);
         return ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES"))
-            .Split(Path.PathSeparator);
+            .Split(Path.PathSeparator)
+            .Where(path => string.Equals(Path.GetDirectoryName(path), runtimeDirectory, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(Path.GetDirectoryName(path), desktopDirectory, StringComparison.OrdinalIgnoreCase));
     }
 
 	private static void TryAddMetadataReference(List<MetadataReference> references, HashSet<string> seenPaths, string referencePath, string logPath)
@@ -262,11 +266,6 @@ public static class SilverfishBuildService
 		{
 			text = "using System.Linq;" + Environment.NewLine + "#line 1" + Environment.NewLine + text;
 		}
-		// Legacy kernels call the editor directly. CLI replay has no main window.
-        text = text.Replace("(Application.Current.MainWindow as MainWindow).BestScore = bestval;",
-            "if (Application.Current?.MainWindow is MainWindow editorWindow) editorWindow.BestScore = bestval;");
-        text = text.Replace("(Application.Current.MainWindow as MainWindow).",
-            "(Application.Current?.MainWindow as MainWindow)?.");
         return text;
     }
 

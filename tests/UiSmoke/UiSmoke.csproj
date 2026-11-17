@@ -5,6 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../../RoutineCompiler/RoutineCompiler.csproj" />
+    <ProjectReference Include="../../RoutineHelper/RoutineHelper.csproj" />
   </ItemGroup>
 </Project>

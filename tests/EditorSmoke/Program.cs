@@ -81,15 +81,17 @@ try
     string markerPath = Path.Combine(sourceDirectory, "..", "silverfish_HB.cs");
     string outputPath = Path.Combine(fixtureRoot, "CompiledAssemblies", "Silverfish.dll");
     string logPath = Path.Combine(fixtureRoot, "compile.log");
-    File.WriteAllText(markerPath, "namespace SmokeFixture { public class Marker { public int Value => 1; } }");
+    File.WriteAllText(markerPath, "#if APPLICATION_MODE\n#error Offline kernels must compile without editor callbacks\n#endif\nnamespace SmokeFixture { public class Marker { public int Value => new[] { 1 }.FirstOrDefault(); } }");
+    byte[] originalSource = File.ReadAllBytes(markerPath);
     var firstBuild = SilverfishBuildService.Compile(sourceDirectory, outputPath, logPath);
     Require(!firstBuild.Errors.HasErrors, "First strategy compile");
+    Require(File.ReadAllBytes(markerPath).SequenceEqual(originalSource), "Compilation keeps input source unchanged");
     byte[] firstBytes = File.ReadAllBytes(outputPath);
     Assembly firstAssembly = Assembly.Load(firstBytes);
 
-    File.WriteAllText(markerPath, "broken source");
+    File.WriteAllText(markerPath, "public class EditorDependency { public object Value => typeof(RoutineHelper.MainWindow); }");
     var failedBuild = SilverfishBuildService.Compile(sourceDirectory, outputPath, logPath);
-    Require(failedBuild.Errors.HasErrors, "Invalid source reports errors");
+    Require(failedBuild.Errors.HasErrors, "Offline compilation excludes editor assembly references");
     Require(File.ReadAllBytes(outputPath).SequenceEqual(firstBytes), "Failed compile preserves working DLL");
 
     File.WriteAllText(markerPath, "namespace SmokeFixture { public class Marker { public int Value => 2; } }");

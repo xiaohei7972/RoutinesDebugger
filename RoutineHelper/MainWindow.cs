@@ -1,5 +1,4 @@
 using System;
-using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,6 +8,7 @@ using System.Linq;
 using System.Media;
 using System.Reflection;
 using System.Text;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -131,11 +131,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
 	private float bestScore;
 
-	private readonly string _defaultXmlPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings\\Default");
 
 	private readonly string _routineXml = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Settings\\Default\\routine.xml");
 
-	private readonly string _compiledAssemblies = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CompiledAssemblies");
 
 	private readonly string _compileLog = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "compile_attempt.log");
 
@@ -170,106 +168,24 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 		InitializeComponent();
 	}
 
-	private void LoadAssembly()
-	{
-		if (!Directory.Exists(_defaultXmlPath))
-		{
-			Directory.CreateDirectory(_defaultXmlPath);
-		}
-		if (!Directory.Exists(_compiledAssemblies))
-		{
-			Directory.CreateDirectory(_compiledAssemblies);
-		}
-		string path = Path.Combine(_compiledAssemblies, "Silverfish.dll");
-		if (File.Exists(path))
-		{
-			compiledRoutines = Assembly.Load(File.ReadAllBytes(path));
-			return;
-		}
-		CompilerWindow compilerWindow = new CompilerWindow("请先导入 DefaultRoutine 文件夹");
-		bool? flag = compilerWindow.ShowDialog();
-		if (!flag.HasValue || !flag.Value)
-		{
-			if (compilerWindow.Results != null)
-			{
-				string text = "";
-				foreach (CompilerError error in compilerWindow.Results.Errors)
-				{
-					if (!error.IsWarning)
-					{
-						text += $"{error}\r\n";
-					}
-				}
-				System.Windows.MessageBox.Show(text, "CompilerErrors");
-				LoadAssembly();
-				return;
-			}
-			Environment.Exit(0);
-		}
-		if (File.Exists(path))
-		{
-			compiledRoutines = Assembly.Load(File.ReadAllBytes(path));
-			return;
-		}
-		System.Windows.MessageBox.Show("编译已执行，但未找到 CompiledAssemblies\\Silverfish.dll", "CompilerErrors");
-		LoadAssembly();
-	}
+    private void LoadAssembly()
+    {
+        compiledRoutines = RoutineRuntime.LoadCompiledRoutinesOrThrow();
+    }
 
-	private bool EnsureKernelCompiledOnStartup()
-	{
-		return (File.Exists(RoutineRuntime.GetCompiledAssemblyPath()) && RoutineRuntime.TryResolveSilverfishPath(out _))
-            || CompileKernelViaDialog("请选择并编译本次要使用的 DefaultRoutine 文件夹");
-	}
+    private bool EnsureKernelCompiledOnStartup()
+    {
+        return (File.Exists(RoutineRuntime.GetCompiledAssemblyPath()) && RoutineRuntime.TryResolveSilverfishPath(out _))
+            || CompileKernelViaDialog("首次使用请选择 DefaultRoutine 或 Silverfish 目录并编译");
+    }
 
-	private bool CompileKernelViaDialog(string hint)
-	{
-		CompilerWindow compilerWindow = new CompilerWindow(hint);
-		Window window = Window.GetWindow(this);
-		if (window != null)
-		{
-			double left = window.Left + (window.Width - compilerWindow.Width) / 2.0;
-			double top = window.Top + (window.Height - compilerWindow.Height) / 2.0;
-			compilerWindow.WindowStartupLocation = WindowStartupLocation.Manual;
-			compilerWindow.Left = left;
-			compilerWindow.Top = top;
-		}
-		bool? flag = compilerWindow.ShowDialog();
-		if (flag.HasValue && flag.Value)
-		{
-			SuccessLog("[Compiler] 启动编译完成。");
-			return true;
-		}
-		if (compilerWindow.Results != null)
-		{
-			ShowCompilerErrors(compilerWindow.Results, "StartupCompilerErrors");
-		}
-		return false;
-	}
-
-	private static void ShowCompilerErrors(CompilerResults results, string title)
-	{
-		if (results == null)
-		{
-			System.Windows.MessageBox.Show("编译失败，但没有返回详细错误。", title);
-			return;
-		}
-		StringBuilder stringBuilder = new StringBuilder();
-		foreach (CompilerError error in results.Errors)
-		{
-			if (!error.IsWarning)
-			{
-				stringBuilder.AppendLine(error.ToString());
-			}
-		}
-		if (stringBuilder.Length == 0)
-		{
-			foreach (CompilerError error2 in results.Errors)
-			{
-				stringBuilder.AppendLine(error2.ToString());
-			}
-		}
-		System.Windows.MessageBox.Show((stringBuilder.Length == 0) ? "编译失败，但没有返回详细错误。" : stringBuilder.ToString(), title);
-	}
+    private bool CompileKernelViaDialog(string hint)
+    {
+        var compiler = new CompilerWindow(hint) { Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+        if (compiler.ShowDialog() != true) return false;
+        SuccessLog("[Compiler] 策略编译完成。");
+        return true;
+    }
 
 	private void InitWrapers()
 	{
@@ -3510,7 +3426,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 		{
 			return null;
 		}
-		string text2 = Path.Combine(Path.GetDirectoryName(text) ?? string.Empty, Path.GetFileNameWithoutExtension(text));
+		string key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text.ToUpperInvariant())))[..12];
+        string outputDirectory = Path.Combine(AppContext.BaseDirectory, "Outputs", "Replay", key);
+        Directory.CreateDirectory(outputDirectory);
+        string text2 = Path.Combine(outputDirectory, Path.GetFileNameWithoutExtension(text));
 		return new AiFixArtifacts
 		{
 			ResultPath = text2 + ".editor.result",
@@ -3725,48 +3644,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 		LogScrollViewer.ScrollToEnd();
 	}
 
-	private void RoutineSelectionButton_Click(object sender, RoutedEventArgs e)
-	{
-		CompilerWindow compilerWindow = new CompilerWindow(null);
-		Window window = Window.GetWindow(this);
-		double left = window.Left + (window.Width - compilerWindow.Width) / 2.0;
-		double top = window.Top + (window.Height - compilerWindow.Height) / 2.0;
-		compilerWindow.WindowStartupLocation = WindowStartupLocation.Manual;
-		compilerWindow.Left = left;
-		compilerWindow.Top = top;
-		bool? flag = compilerWindow.ShowDialog();
-		if (flag.HasValue && flag.Value)
-		{
-			string text = compilerWindow.Results?.PathToAssembly;
-			if (!string.IsNullOrWhiteSpace(text) && File.Exists(text))
-			{
-				compiledRoutines = Assembly.Load(File.ReadAllBytes(text));
-			}
-			else
-			{
-				compiledRoutines = compilerWindow.Results.CompiledAssembly;
-			}
-			InitWrapers();
-			SystemSounds.Exclamation.Play();
-		}
-		else
-		{
-			if (compilerWindow.Results == null)
-			{
-				return;
-			}
-			string text2 = "";
-			foreach (CompilerError error in compilerWindow.Results.Errors)
-			{
-				if (!error.IsWarning)
-				{
-					text2 += $"{error}\r\n";
-				}
-			}
-			System.Windows.MessageBox.Show(text2, "CompilerErrors");
-			SystemSounds.Hand.Play();
-		}
-	}
+    private void RoutineSelectionButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!CompileKernelViaDialog("选择策略目录，编译成功后自动加载")) return;
+        LoadAssembly();
+        InitWrapers();
+    }
 
 	private void ExecuteButton_Click(object sender, RoutedEventArgs e)
 	{
