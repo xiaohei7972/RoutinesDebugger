@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using SilverfishWrapper;
 
 namespace RoutineHelper;
@@ -208,6 +210,25 @@ public static class RoutineRuntime
 	{
 		return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CompiledAssemblies", "Silverfish.dll");
 	}
+
+    internal static bool IsCompiledKernelUsable(string assemblyPath)
+    {
+        if (!File.Exists(assemblyPath)) return false;
+        try
+        {
+            using var stream = File.OpenRead(assemblyPath);
+            using var reader = new PEReader(stream);
+            if (!reader.HasMetadata || reader.PEHeaders.CoffHeader.Machine != Machine.Amd64) return false;
+            MetadataReader metadata = reader.GetMetadataReader();
+            return metadata.IsAssembly && metadata.GetString(metadata.GetAssemblyDefinition().Name) == "Silverfish"
+                && !metadata.AssemblyReferences.Any(reference =>
+                    metadata.GetString(metadata.GetAssemblyReference(reference).Name) == "RoutineHelper");
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or BadImageFormatException)
+        {
+            return false;
+        }
+    }
 
 	public static Assembly LoadCompiledRoutinesOrThrow()
 	{

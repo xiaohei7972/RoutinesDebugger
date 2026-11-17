@@ -86,6 +86,18 @@ try
     var firstBuild = SilverfishBuildService.Compile(sourceDirectory, outputPath, logPath);
     Require(!firstBuild.Errors.HasErrors, "First strategy compile");
     Require(File.ReadAllBytes(markerPath).SequenceEqual(originalSource), "Compilation keeps input source unchanged");
+    Require(RoutineHelper.RoutineRuntime.IsCompiledKernelUsable(outputPath), "Current offline kernel cache is usable");
+    string invalidKernelPath = Path.Combine(fixtureRoot, "invalid.dll");
+    File.WriteAllText(invalidKernelPath, "invalid binary");
+    Require(!RoutineHelper.RoutineRuntime.IsCompiledKernelUsable(invalidKernelPath), "Corrupt cache triggers compilation");
+    string legacyKernelPath = Path.Combine(fixtureRoot, "legacy.dll");
+    var legacyCompilation = CSharpCompilation.Create("Silverfish",
+        new[] { CSharpSyntaxTree.ParseText("public class Legacy { public object Editor => typeof(RoutineHelper.MainWindow); }") },
+        ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")).Split(Path.PathSeparator).Select(path => MetadataReference.CreateFromFile(path)),
+        new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, platform: Platform.X64));
+    using (var stream = File.Create(legacyKernelPath))
+        Require(legacyCompilation.Emit(stream).Success, "Legacy kernel fixture builds");
+    Require(!RoutineHelper.RoutineRuntime.IsCompiledKernelUsable(legacyKernelPath), "Editor-coupled cache triggers compilation");
     byte[] firstBytes = File.ReadAllBytes(outputPath);
     Assembly firstAssembly = Assembly.Load(firstBytes);
 

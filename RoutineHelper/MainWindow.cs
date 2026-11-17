@@ -175,8 +175,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private bool EnsureKernelCompiledOnStartup()
     {
-        return (File.Exists(RoutineRuntime.GetCompiledAssemblyPath()) && RoutineRuntime.TryResolveSilverfishPath(out _))
-            || CompileKernelViaDialog("首次使用请选择 DefaultRoutine 或 Silverfish 目录并编译");
+        return (RoutineRuntime.IsCompiledKernelUsable(RoutineRuntime.GetCompiledAssemblyPath()) && RoutineRuntime.TryResolveSilverfishPath(out _))
+            || CompileKernelViaDialog("首次使用或更新策略缓存，请选择目录并编译");
     }
 
     private bool CompileKernelViaDialog(string hint)

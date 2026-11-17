@@ -15,7 +15,7 @@ RoutineHelper 与反射生成工具支持 Windows x64、.NET 8，以及安装目
 3. 选择炉石兄弟安装中的 DefaultRoutine 或 Silverfish 目录，点击“编译并加载”。窗口显示编译进度和诊断，失败后可以修正源码并重试。
 4. 在主窗口选择策略与局面记录，执行测试并查看评分、动作和局面。卡牌查询支持输入关键字后按回车。
 
-后续启动自动加载已编译策略。修改策略或切换目录时，点击主窗口的“编译”按钮，成功后自动加载新程序集。
+后续启动自动加载已编译策略。旧版界面耦合缓存或损坏缓存会引导重新编译。修改策略或切换目录时，点击主窗口的“编译”按钮，成功后自动加载新程序集。
 
 配置读写按文件路径串行执行，并以原子替换方式保存。配置保存在程序旁的 Settings/Default/routine.xml，沿用 RoutinePath、SilverfishPath、LastRoutine 和 LastTestFile。程序也支持 HB_DEFAULTROUTINE_PATH、HB_SILVERFISH_PATH、ROUTINEHELPER_DEFAULTROUTINE_PATH 环境变量，已有有效配置优先使用。与炉石兄弟放在相邻层级时可自动发现策略目录。
 
